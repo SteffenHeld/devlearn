@@ -8,6 +8,7 @@ import CoursesPage from "./pages/CoursesPage";
 import LessonPage from "./pages/LessonPage";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import NotFoundPage from "./pages/NotFoundPage";
+import CourseDetailPage from "./pages/CourseDetailPage";
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, role } = useAuth();
@@ -32,8 +33,13 @@ export default function App() {
           </ProtectedRoute>
         } />
         <Route path="/kurse" element={
+        <ProtectedRoute allowedRoles={["student"]}>
+          <CoursesPage />
+        </ProtectedRoute>
+        } />
+        <Route path="/kurse/:kursId" element={
           <ProtectedRoute allowedRoles={["student"]}>
-            <CoursesPage />
+            <CourseDetailPage />
           </ProtectedRoute>
         } />
         <Route path="/kurse/:kursId/:modulId/:lektionId" element={
