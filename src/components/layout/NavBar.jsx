@@ -1,0 +1,58 @@
+import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { signOut } from "firebase/auth";
+import { auth } from "../../firebase/firebase";
+import { useAuth } from "../../context/AuthContext";
+
+export default function Navbar() {
+  const { user, role } = useAuth();
+  const navigate = useNavigate();
+
+  async function handleLogout() {
+    await signOut(auth);
+    navigate("/login");
+  }
+
+  return (
+    <AppBar position="static">
+      <Toolbar>
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          sx={{ flexGrow: 1, cursor: "pointer" }}
+          onClick={() => navigate(role === "teacher" ? "/teacher/dashboard" : "/dashboard")}
+        >
+          DevLearn
+        </Typography>
+
+        {user && role === "student" && (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button color="inherit" onClick={() => navigate("/dashboard")}>
+              Dashboard
+            </Button>
+            <Button color="inherit" onClick={() => navigate("/kurse")}>
+              Kurse
+            </Button>
+          </Box>
+        )}
+
+        {user && role === "teacher" && (
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button color="inherit" onClick={() => navigate("/teacher/dashboard")}>
+              Dashboard
+            </Button>
+            <Button color="inherit" onClick={() => navigate("/teacher/kurse")}>
+              Kurse
+            </Button>
+          </Box>
+        )}
+
+        {user && (
+          <Button color="inherit" onClick={handleLogout} sx={{ ml: 2 }}>
+            Abmelden
+          </Button>
+        )}
+      </Toolbar>
+    </AppBar>
+  );
+}
