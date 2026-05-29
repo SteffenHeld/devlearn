@@ -102,7 +102,7 @@ export default function LandingPage() {
       </Box>
 
       {/* Kategorien */}
-      <Container maxWidth="lg" sx={{ py: 8 }}>
+      <Container maxWidth="lg" sx={{ py: 8}}>
         <Typography variant="h4" fontWeight={700} textAlign="center" mb={1}>
           Was du lernst
         </Typography>
@@ -111,12 +111,14 @@ export default function LandingPage() {
           color="text.secondary"
           textAlign="center"
           mb={5}
+          mt={2}
         >
           Vier Themenbereiche – von den Grundlagen bis zu modernen Tools.
         </Typography>
 
         <Box
           sx={{
+            mt: 2,
             display: "flex",
             flexWrap: "wrap",
             gap: 3,
