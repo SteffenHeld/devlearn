@@ -11,7 +11,6 @@ import CodeIcon from "@mui/icons-material/Code";
 import BrushIcon from "@mui/icons-material/Brush";
 import DevicesIcon from "@mui/icons-material/Devices";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
-import { Directions } from "@mui/icons-material";
 
 const CATEGORIES = [
   {
