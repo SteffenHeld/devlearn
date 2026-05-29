@@ -79,10 +79,10 @@ export default function LandingPage() {
           color: "white",
         }}
       >
-        <Typography variant="h3" fontWeight={700} mb={2}>
+        <Typography variant="h3" fontWeight={700} mb={4}>
           Lerne Web Development – Schritt für Schritt.
         </Typography>
-        <Typography variant="h6" mb={4} sx={{ opacity: 0.9 }}>
+        <Typography variant="h6" mb={6} sx={{ opacity: 0.9 }}>
           Strukturierte Kurse für Einsteiger und Fortgeschrittene.
         </Typography>
         <Button
@@ -90,6 +90,7 @@ export default function LandingPage() {
           size="large"
           onClick={() => navigate("/register")}
           sx={{
+            mt: 4,
             bgcolor: "white",
             color: "primary.main",
             fontWeight: 700,
