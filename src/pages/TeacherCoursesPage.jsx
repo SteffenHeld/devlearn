@@ -7,10 +7,17 @@ import Layout from "../components/layout/Layout";
 import {
   Typography, Box, Card, CardContent, CardActionArea,
   Button, TextField, Dialog, DialogTitle, DialogContent,
-  DialogActions, CircularProgress, Chip, Grid
+  DialogActions, CircularProgress, Chip, Grid, MenuItem
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
+
+const CATEGORIES = [
+  "HTML / CSS / JavaScript",
+  "React / Vite / TypeScript",
+  "Figma",
+  "Framer",
+];
 
 export default function TeacherCoursesPage() {
   const { courses, loading } = useCourses();
@@ -19,6 +26,7 @@ export default function TeacherCoursesPage() {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState(CATEGORIES[0]);
   const [saving, setSaving] = useState(false);
 
   async function handleCreate() {
@@ -27,10 +35,12 @@ export default function TeacherCoursesPage() {
     await addDoc(collection(db, "courses"), {
       title,
       description,
+      category,
       createdBy: user.uid,
     });
     setTitle("");
     setDescription("");
+    setCategory(CATEGORIES[0]);
     setSaving(false);
     setOpen(false);
   }
@@ -41,11 +51,7 @@ export default function TeacherCoursesPage() {
         <Typography variant="h4" fontWeight={700}>
           Kursverwaltung
         </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpen(true)}
-        >
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
           Neuer Kurs
         </Button>
       </Box>
@@ -57,9 +63,7 @@ export default function TeacherCoursesPage() {
       )}
 
       {!loading && courses.length === 0 && (
-        <Typography color="text.secondary">
-          Noch keine Kurse vorhanden.
-        </Typography>
+        <Typography color="text.secondary">Noch keine Kurse vorhanden.</Typography>
       )}
 
       <Grid container spacing={3}>
@@ -74,7 +78,11 @@ export default function TeacherCoursesPage() {
                   <Typography variant="body2" color="text.secondary" mb={2}>
                     {course.description}
                   </Typography>
-                  <Chip label="Web Development" size="small" color="primary" />
+                  <Chip
+                    label={course.category || "Sonstige"}
+                    size="small"
+                    color="primary"
+                  />
                 </CardContent>
               </CardActionArea>
             </Card>
@@ -100,6 +108,19 @@ export default function TeacherCoursesPage() {
             multiline
             rows={3}
           />
+          <TextField
+            select
+            label="Kategorie"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            fullWidth
+          >
+            {CATEGORIES.map((cat) => (
+              <MenuItem key={cat} value={cat}>
+                {cat}
+              </MenuItem>
+            ))}
+          </TextField>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Abbrechen</Button>
