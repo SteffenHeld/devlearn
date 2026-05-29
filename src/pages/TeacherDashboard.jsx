@@ -38,18 +38,27 @@ export default function TeacherDashboard() {
 
   return (
     <Layout>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-        <Typography variant="h4" fontWeight={700}>
-          Teacher Dashboard
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate("/teacher/kurse")}
-        >
-          Neuer Kurs
-        </Button>
-      </Box>
+      <Box
+      sx={{
+        display: "flex",
+        flexDirection: { xs: "column", sm: "row" },
+        justifyContent: "space-between",
+        alignItems: { xs: "flex-start", sm: "center" },
+        gap: 2,
+        mb: 2,
+      }}
+      >
+      <Typography variant="h4" fontWeight={700}>
+        Teacher Dashboard
+      </Typography>
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        onClick={() => navigate("/teacher/kurse")}
+      >
+        Neuer Kurs
+      </Button>
+    </Box>
       <Typography variant="body1" color="text.secondary" mb={4}>
         Hier siehst du alle Kurse die du erstellt hast.
       </Typography>
@@ -60,7 +69,7 @@ export default function TeacherDashboard() {
         </Typography>
       ) : (
         Object.entries(grouped).map(([category, items]) => (
-          <Box key={category} mb={5}>
+          <Box key={category} mb={5} mt={3}>
             <Typography variant="h6" fontWeight={600} mb={1}>
               {category}
             </Typography>

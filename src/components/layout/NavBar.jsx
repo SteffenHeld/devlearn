@@ -8,10 +8,10 @@ export default function Navbar() {
   const { user, role } = useAuth();
   const navigate = useNavigate();
 
-  async function handleLogout() {
-    await signOut(auth);
-    navigate("/login");
-  }
+async function handleLogout() {
+  navigate("/");
+  await signOut(auth);
+}
 
   return (
     <AppBar position="static">

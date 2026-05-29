@@ -12,13 +12,15 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
-    const { user, role } = useAuth();
+    const { user, role, loading } = useAuth();
     
-    useEffect(() => {
-    if (user && role === "teacher") navigate("/teacher/dashboard");
-    if (user && role === "student") navigate("/dashboard");
-  }, [user, role, navigate]);
 
+    useEffect(() => {
+      if (loading) return;
+      if (user && role === "teacher") navigate("/teacher/dashboard");
+      if (user && role === "student") navigate("/dashboard");
+    }, [user, role, loading, navigate]);
+  
   async function handleLogin(e) {
     e.preventDefault();
     setError("");
