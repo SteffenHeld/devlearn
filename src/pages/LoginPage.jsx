@@ -26,7 +26,7 @@ export default function LoginPage() {
     setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-    } catch (_err) {
+    } catch {
       setError("E-Mail oder Passwort falsch.");
     }
   }

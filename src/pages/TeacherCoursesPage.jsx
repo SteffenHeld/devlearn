@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";  // useEffect hier zusammenfassen
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
@@ -10,7 +10,7 @@ import {
   DialogActions, CircularProgress, Chip, Grid, MenuItem
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";  // useSearchParams hier zusammenfassen
 
 const CATEGORIES = [
   "HTML / CSS / JavaScript",
@@ -23,11 +23,20 @@ export default function TeacherCoursesPage() {
   const { courses, loading } = useCourses();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [open, setOpen] = useState(
+    () => searchParams.get("newCourse") === true
+  );
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("newCourse") === "true") {
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   async function handleCreate() {
     if (!title.trim()) return;

@@ -1,0 +1,391 @@
+/* ═══════════════════════════════════════════════════════════
+   DevLearn — LandingPage: Diagonales Split-Layout
+   Einbinden in main.jsx oder index.css:  @import './LandingPage.css';
+═══════════════════════════════════════════════════════════ */
+
+/* ── Wrapper ─────────────────────────────────────────────── */
+.dl-landing {
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background: #ffffff;
+    font-family: 'DM Sans', 'Segoe UI', sans-serif;
+}
+
+/* ── SVG-Hintergrund ─────────────────────────────────────── */
+.dl-diag-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.dl-zone-purple {
+    fill: #EEEDFE;
+    opacity: 0.5;
+}
+
+.dl-zone-teal {
+    fill: #E1F5EE;
+    opacity: 0.55;
+}
+
+.dl-diag-line {
+    stroke: #AFA9EC;
+    stroke-width: 1;
+    opacity: 0.5;
+}
+
+.dl-diag-line--2 {
+    stroke: #9FE1CB;
+    opacity: 0.45;
+}
+
+.dl-deco-circle {
+    fill: none;
+    stroke-width: 0.8;
+}
+
+.dl-deco-circle--left {
+    stroke: #CECBF6;
+    opacity: 0.5;
+}
+
+.dl-deco-circle--right {
+    stroke: #9FE1CB;
+    opacity: 0.45;
+}
+
+/* ── Header / Navigation ─────────────────────────────────── */
+.dl-header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    padding: 28px 48px;
+    gap: 8px;
+}
+
+.dl-logo {
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: -0.5px;
+    margin-right: 16px;
+}
+
+.dl-logo span {
+    color: #7F77DD;
+}
+
+.dl-nav {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+}
+
+.dl-nav a {
+    font-size: 14px;
+    color: #5a5a6e;
+    padding: 6px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dl-nav a:hover {
+    background: rgba(127, 119, 221, 0.1);
+    color: #534AB7;
+}
+
+.dl-register-btn {
+    font-size: 13px;
+    font-weight: 500;
+    color: #534AB7;
+    background: transparent;
+    border: 1px solid #AFA9EC;
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.dl-register-btn:hover {
+    background: #EEEDFE;
+}
+
+/* ── Hero (Mitte-links) ──────────────────────────────────── */
+.dl-hero {
+    position: relative;
+    z-index: 10;
+    padding: 60px 48px 40px;
+    max-width: 520px;
+}
+
+.dl-hero-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #534AB7;
+    background: #EEEDFE;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+}
+
+.dl-hero-title {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.15;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+}
+
+.dl-hero-sub {
+    font-size: 16px;
+    color: #6b6b80;
+    line-height: 1.7;
+    margin-bottom: 28px;
+    max-width: 380px;
+}
+
+.dl-hero-btns {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.dl-btn-primary {
+    background: #7F77DD;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.dl-btn-primary:hover {
+    background: #534AB7;
+}
+
+.dl-btn-primary:active {
+    transform: scale(0.98);
+}
+
+.dl-btn-ghost {
+    background: transparent;
+    color: #5a5a6e;
+    font-size: 14px;
+    border: 1px solid #d8d7e8;
+    padding: 12px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.dl-btn-ghost:hover {
+    background: rgba(0, 0, 0, 0.04);
+    border-color: #AFA9EC;
+}
+
+/* ── Sektor-Label (kleiner Hilfstext über Zonen) ─────────── */
+.dl-zone-label {
+    font-size: 11px;
+    color: #9898b0;
+    margin-bottom: 8px;
+    letter-spacing: 0.2px;
+}
+
+.dl-zone-label--teal {
+    color: #1D9E75;
+}
+
+/* ── Kontakt-Zone (unten-links) ──────────────────────────── */
+.dl-contact-zone {
+    position: absolute;
+    bottom: 44px;
+    left: 48px;
+    z-index: 10;
+}
+
+.dl-contact-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #534AB7;
+    background: #EEEDFE;
+    border: 1px solid #CECBF6;
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.dl-contact-link:hover {
+    background: #CECBF6;
+    border-color: #AFA9EC;
+}
+
+/* ── Login-Zone (unten-rechts) ───────────────────────────── */
+.dl-login-zone {
+    position: absolute;
+    bottom: 44px;
+    right: 48px;
+    z-index: 10;
+    text-align: right;
+}
+
+.dl-login-card {
+    background: #ffffff;
+    border: 1px solid #e8e8f0;
+    border-radius: 16px;
+    padding: 28px 28px 24px;
+    width: 280px;
+    text-align: left;
+    box-shadow: 0 2px 16px rgba(127, 119, 221, 0.08);
+}
+
+.dl-login-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 18px;
+}
+
+/* ── Formular-Felder ─────────────────────────────────────── */
+.dl-field {
+    margin-bottom: 12px;
+}
+
+.dl-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: #9898b0;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 5px;
+}
+
+.dl-field input {
+    width: 100%;
+    background: #f7f7fb;
+    border: 1px solid #e8e8f0;
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 14px;
+    color: #1a1a1a;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+    font-family: inherit;
+}
+
+.dl-field input:focus {
+    border-color: #7F77DD;
+    background: #fff;
+}
+
+.dl-field input::placeholder {
+    color: #c0c0d0;
+}
+
+/* ── Fehler ──────────────────────────────────────────────── */
+.dl-error {
+    font-size: 12px;
+    color: #D85A30;
+    background: #FAECE7;
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+}
+
+/* ── Login-Button ────────────────────────────────────────── */
+.dl-login-btn {
+    width: 100%;
+    background: #1D9E75;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: background 0.15s, transform 0.1s;
+    font-family: inherit;
+}
+
+.dl-login-btn:hover {
+    background: #0F6E56;
+}
+
+.dl-login-btn:active {
+    transform: scale(0.99);
+}
+
+.dl-login-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ── Registrierungs-Hinweis ──────────────────────────────── */
+.dl-register-hint {
+    font-size: 12px;
+    color: #9898b0;
+    margin-top: 14px;
+    text-align: center;
+}
+
+.dl-register-hint span {
+    color: #7F77DD;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.dl-register-hint span:hover {
+    text-decoration: underline;
+}
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .dl-header {
+        padding: 20px 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .dl-nav {
+        order: 3;
+        flex-basis: 100%;
+    }
+
+    .dl-hero {
+        padding: 40px 24px 32px;
+    }
+
+    .dl-contact-zone {
+        position: static;
+        padding: 0 24px 24px;
+    }
+
+    .dl-login-zone {
+        position: static;
+        padding: 0 24px 40px;
+        text-align: left;
+    }
+
+    .dl-login-card {
+        width: 100%;
+    }
+}

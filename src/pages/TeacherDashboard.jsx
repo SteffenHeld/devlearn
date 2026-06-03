@@ -54,7 +54,7 @@ export default function TeacherDashboard() {
       <Button
         variant="contained"
         startIcon={<AddIcon />}
-        onClick={() => navigate("/teacher/kurse")}
+        onClick={() => navigate("/teacher/kurse?newCourse=true")}
       >
         Neuer Kurs
       </Button>
