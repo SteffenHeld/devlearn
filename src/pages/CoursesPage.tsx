@@ -1,103 +1,56 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, collection, getDocs, orderBy, query } from "firebase/firestore";
-import { db } from "../firebase/firebase";
 import Layout from "../components/layout/Layout";
+import useCourses from "../hooks/useCourses";
 import {
-  Typography, Box, Card, CardContent, CardActionArea,
-  CircularProgress, Button, Divider, Chip
+  Typography, Grid, Card, CardContent, CardActionArea,
+  CircularProgress, Box, Chip
 } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useNavigate } from "react-router-dom";
 
-export default function ModuleDetailPage() {
-  const { kursId, modulId } = useParams();
+export default function CoursesPage() {
+  const { courses, loading, error } = useCourses();
   const navigate = useNavigate();
-  const [module, setModule] = useState(null);
-  const [lessons, setLessons] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      const moduleSnap = await getDoc(
-        doc(db, "courses", kursId, "modules", modulId)
-      );
-      if (moduleSnap.exists()) {
-        setModule({ id: moduleSnap.id, ...moduleSnap.data() });
-      }
-
-      const lessonsQuery = query(
-        collection(db, "courses", kursId, "modules", modulId, "lessons"),
-        orderBy("order")
-      );
-      const lessonsSnap = await getDocs(lessonsQuery);
-      setLessons(lessonsSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
-      setLoading(false);
-    }
-
-    fetchData();
-  }, [kursId, modulId]);
-
-  if (loading) return (
-    <Layout>
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
-        <CircularProgress />
-      </Box>
-    </Layout>
-  );
 
   return (
     <Layout>
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate(`/kurse/${kursId}`)}
-        sx={{ mb: 2 }}
-      >
-        Zurück zum Kurs
-      </Button>
-
-      <Typography variant="h4" sx={{ fontWeight: 700 }} gutterBottom>
-        {module?.title}
-      </Typography>
-      <Divider sx={{ mb: 3 }} />
-
-      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
-        Lektionen
+      <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
+        Alle Kurse
       </Typography>
 
-      {lessons.length === 0 && (
+      {loading && (
+        <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
+          <CircularProgress />
+        </Box>
+      )}
+
+      {error && (
+        <Typography sx={{ color: "error" }}>{error}</Typography>
+      )}
+
+      {!loading && courses.length === 0 && (
         <Typography sx={{ color: "text.secondary" }}>
-          Noch keine Lektionen vorhanden.
+          Noch keine Kurse verfügbar.
         </Typography>
       )}
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {lessons.map((lesson, index) => (
-          <Card key={lesson.id}>
-            <CardActionArea
-              onClick={() => navigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
-            >
-              <CardContent sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Box>
-                  <Typography variant="overline" sx={{ color: "text.secondary" }}>
-                    Lektion {index + 1}
+      <Grid container spacing={3}>
+        {courses.map((course) => (
+          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={course.id}>
+            <Card>
+              <CardActionArea onClick={() => navigate(`/kurse/${course.id}`)}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                    {course.title}
                   </Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {lesson.title}
+                  <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
+                    {course.description}
                   </Typography>
-                </Box>
-                <Chip
-                  icon={<CheckCircleIcon />}
-                  label="Offen"
-                  size="small"
-                  variant="outlined"
-                  color="default"
-                />
-              </CardContent>
-            </CardActionArea>
-          </Card>
+                  <Chip label="Web Development" size="small" color="primary" />
+                </CardContent>
+              </CardActionArea>
+            </Card>
+          </Grid>
         ))}
-      </Box>
+      </Grid>
     </Layout>
   );
 }
