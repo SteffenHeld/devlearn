@@ -1,10 +1,13 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { AuthProvider } from "./context/AuthContext";
-import { ThemeContextProvider } from "./context/ThemeContext"; // 👈 neu
+import { ThemeContextProvider } from "./context/ThemeContext";
 import App from "./App";
 
-createRoot(document.getElementById("root")).render(
+const rootElement = document.getElementById("root");
+if (!rootElement) throw new Error("Root-Element nicht gefunden");
+
+createRoot(rootElement).render(
   <StrictMode>
     <ThemeContextProvider>
       <AuthProvider>

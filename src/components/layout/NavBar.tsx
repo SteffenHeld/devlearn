@@ -10,12 +10,12 @@ import { auth } from "../../firebase/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useThemeToggle } from "../../context/ThemeContext";
 
-export default function Navbar() {
+export default function NavBar() {
   const { user, role } = useAuth();
   const { mode, toggleTheme } = useThemeToggle();
   const navigate = useNavigate();
 
-  async function handleLogout() {
+  async function handleLogout(): Promise<void> {
     navigate("/");
     await signOut(auth);
   }
@@ -25,8 +25,7 @@ export default function Navbar() {
       <Toolbar>
         <Typography
           variant="h6"
-          fontWeight={700}
-          sx={{ flexGrow: 1, cursor: "pointer" }}
+          sx={{ fontWeight: 700, flexGrow: 1, cursor: "pointer" }}
           onClick={() =>
             navigate(role === "teacher" ? "/teacher/dashboard" : "/dashboard")
           }

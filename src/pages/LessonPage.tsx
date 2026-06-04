@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
+import { Lesson } from "../types";
 import Layout from "../components/layout/Layout";
 import {
   Typography, Box, Button, CircularProgress,
@@ -12,39 +13,46 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 export default function LessonPage() {
-  const { kursId, modulId, lektionId } = useParams();
+  const { kursId, modulId, lektionId } = useParams<{
+    kursId: string;
+    modulId: string;
+    lektionId: string;
+  }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [lesson, setLesson] = useState(null);
-  const [completed, setCompleted] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [completed, setCompleted] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    async function fetchData() {
+    if (!kursId || !modulId || !lektionId || !user) return;
+
+    async function fetchData(): Promise<void> {
       const lessonSnap = await getDoc(
-        doc(db, "courses", kursId, "modules", modulId, "lessons", lektionId)
+        doc(db, "courses", kursId!, "modules", modulId!, "lessons", lektionId!)
       );
       if (lessonSnap.exists()) {
-        setLesson({ id: lessonSnap.id, ...lessonSnap.data() });
+        setLesson({ id: lessonSnap.id, ...(lessonSnap.data() as Omit<Lesson, "id">) });
       }
 
       const progressSnap = await getDoc(
-        doc(db, "users", user.uid, "progress", lektionId)
+        doc(db, "users", user!.uid, "progress", lektionId!)
       );
       if (progressSnap.exists()) {
-        setCompleted(progressSnap.data().completed);
+        setCompleted(progressSnap.data().completed as boolean);
       }
 
       setLoading(false);
     }
 
     fetchData();
-  }, [kursId, modulId, lektionId, user.uid]);
+  }, [kursId, modulId, lektionId, user]);
 
-  async function handleComplete() {
+  async function handleComplete(): Promise<void> {
+    if (!user || !lektionId) return;
     await setDoc(doc(db, "users", user.uid, "progress", lektionId), {
       completed: true,
-      completedAt: new Date(),
+      completedAt: Timestamp.now(),
     });
     setCompleted(true);
   }
@@ -68,7 +76,7 @@ export default function LessonPage() {
       </Button>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-        <Typography variant="h4" fontWeight={700}>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
           {lesson?.title}
         </Typography>
         {completed && (

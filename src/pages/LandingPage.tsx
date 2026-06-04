@@ -1,19 +1,20 @@
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebase";
-import { useTheme } from "../context/ThemeContext";
+import { useThemeToggle } from "../context/ThemeContext";
 import "../LandingPage.css";
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { darkMode, toggleDarkMode } = useTheme();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { mode, toggleTheme } = useThemeToggle();
+  const darkMode = mode === "dark";
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -54,10 +55,9 @@ export default function LandingPage() {
           <a href="#preise">Preise</a>
         </nav>
 
-        {/* Dark-Mode-Toggle */}
         <button
           className="dl-theme-toggle"
-          onClick={toggleDarkMode}
+          onClick={toggleTheme}
           aria-label={darkMode ? "Light Mode aktivieren" : "Dark Mode aktivieren"}
         >
           {darkMode ? (
@@ -104,7 +104,7 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* ── Kontakt-Zone (unten-links) ───────────────────────── */}
+      {/* ── Kontakt-Zone ────────────────────────────────────── */}
       <div className="dl-contact-zone">
         <p className="dl-zone-label">Fragen? Meld dich.</p>
         <a href="/contact" className="dl-contact-link">
@@ -116,7 +116,7 @@ export default function LandingPage() {
         </a>
       </div>
 
-      {/* ── Login-Zone (unten-rechts) ────────────────────────── */}
+      {/* ── Login-Zone ──────────────────────────────────────── */}
       <div className="dl-login-zone">
         <p className="dl-zone-label dl-zone-label--teal">Bereits registriert?</p>
         <div className="dl-login-card">

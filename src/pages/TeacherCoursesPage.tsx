@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";  // useEffect hier zusammenfassen
+import { useState, useEffect } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
@@ -10,9 +10,9 @@ import {
   DialogActions, CircularProgress, Chip, Grid, MenuItem
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import { useNavigate, useSearchParams } from "react-router-dom";  // useSearchParams hier zusammenfassen
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-const CATEGORIES = [
+const CATEGORIES: string[] = [
   "HTML / CSS / JavaScript",
   "React / Vite / TypeScript",
   "Figma",
@@ -24,13 +24,13 @@ export default function TeacherCoursesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [open, setOpen] = useState(
-    () => searchParams.get("newCourse") === true
+  const [open, setOpen] = useState<boolean>(
+    () => searchParams.get("newCourse") === "true"
   );
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0]);
-  const [saving, setSaving] = useState(false);
+  const [title, setTitle] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [category, setCategory] = useState<string>(CATEGORIES[0]);
+  const [saving, setSaving] = useState<boolean>(false);
 
   useEffect(() => {
     if (searchParams.get("newCourse") === "true") {
@@ -38,8 +38,8 @@ export default function TeacherCoursesPage() {
     }
   }, [searchParams, setSearchParams]);
 
-  async function handleCreate() {
-    if (!title.trim()) return;
+  async function handleCreate(): Promise<void> {
+    if (!title.trim() || !user) return;
     setSaving(true);
     await addDoc(collection(db, "courses"), {
       title,
@@ -57,7 +57,7 @@ export default function TeacherCoursesPage() {
   return (
     <Layout>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Typography variant="h4" fontWeight={700}>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
           Kursverwaltung
         </Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
@@ -81,14 +81,14 @@ export default function TeacherCoursesPage() {
             <Card>
               <CardActionArea onClick={() => navigate(`/teacher/kurse/${course.id}`)}>
                 <CardContent>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }} gutterBottom>
                     {course.title}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
+                  <Typography variant="body2" sx={{ color: "text.secondary", mb: 2 }}>
                     {course.description}
                   </Typography>
                   <Chip
-                    label={course.category || "Sonstige"}
+                    label={course.category ?? "Sonstige"}
                     size="small"
                     color="primary"
                   />

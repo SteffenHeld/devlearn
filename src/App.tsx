@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ReactNode } from "react";
 import { useAuth } from "./context/AuthContext";
+import { Role } from "./types";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -14,12 +16,21 @@ import TeacherCoursesPage from "./pages/TeacherCoursesPage";
 import TeacherCourseDetailPage from "./pages/TeacherCourseDetailPage";
 import TeacherModuleDetailPage from "./pages/TeacherModuleDetailPage";
 
-function ProtectedRoute({ children, allowedRoles }) {
+// ─── Protected Route ──────────────────────────────────────────────────────────
+
+interface ProtectedRouteProps {
+  children: ReactNode;
+  allowedRoles?: Role[];
+}
+
+function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { user, role } = useAuth();
   if (!user) return <Navigate to="/login" />;
-  if (allowedRoles && !allowedRoles.includes(role)) return <Navigate to="/" />;
+  if (allowedRoles && !allowedRoles.includes(role as Role)) return <Navigate to="/" />;
   return children;
 }
+
+// ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
   return (
@@ -37,9 +48,9 @@ export default function App() {
           </ProtectedRoute>
         } />
         <Route path="/kurse" element={
-        <ProtectedRoute allowedRoles={["student"]}>
-          <CoursesPage />
-        </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["student"]}>
+            <CoursesPage />
+          </ProtectedRoute>
         } />
         <Route path="/kurse/:kursId" element={
           <ProtectedRoute allowedRoles={["student"]}>
@@ -47,9 +58,9 @@ export default function App() {
           </ProtectedRoute>
         } />
         <Route path="/kurse/:kursId/:modulId" element={
-        <ProtectedRoute allowedRoles={["student"]}>
-          <ModuleDetailPage />
-        </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["student"]}>
+            <ModuleDetailPage />
+          </ProtectedRoute>
         } />
         <Route path="/kurse/:kursId/:modulId/:lektionId" element={
           <ProtectedRoute allowedRoles={["student"]}>
@@ -64,19 +75,19 @@ export default function App() {
           </ProtectedRoute>
         } />
         <Route path="/teacher/kurse" element={
-        <ProtectedRoute allowedRoles={["teacher"]}>
-          <TeacherCoursesPage />
-        </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["teacher"]}>
+            <TeacherCoursesPage />
+          </ProtectedRoute>
         } />
         <Route path="/teacher/kurse/:kursId" element={
-        <ProtectedRoute allowedRoles={["teacher"]}>
-          <TeacherCourseDetailPage />
-        </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["teacher"]}>
+            <TeacherCourseDetailPage />
+          </ProtectedRoute>
         } />
         <Route path="/teacher/kurse/:kursId/:modulId" element={
-        <ProtectedRoute allowedRoles={["teacher"]}>
-          <TeacherModuleDetailPage />
-        </ProtectedRoute>
+          <ProtectedRoute allowedRoles={["teacher"]}>
+            <TeacherModuleDetailPage />
+          </ProtectedRoute>
         } />
 
         {/* Fallback */}

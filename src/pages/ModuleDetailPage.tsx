@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "../firebase/firebase";
+import { Module, Lesson } from "../types";
 import Layout from "../components/layout/Layout";
 import {
   Typography, Box, Card, CardContent, CardActionArea,
@@ -11,27 +12,32 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 export default function ModuleDetailPage() {
-  const { kursId, modulId } = useParams();
+  const { kursId, modulId } = useParams<{ kursId: string; modulId: string }>();
   const navigate = useNavigate();
-  const [module, setModule] = useState(null);
-  const [lessons, setLessons] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [module, setModule] = useState<Module | null>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    async function fetchData() {
+    if (!kursId || !modulId) return;
+
+    async function fetchData(): Promise<void> {
       const moduleSnap = await getDoc(
-        doc(db, "courses", kursId, "modules", modulId)
+        doc(db, "courses", kursId!, "modules", modulId!)
       );
       if (moduleSnap.exists()) {
-        setModule({ id: moduleSnap.id, ...moduleSnap.data() });
+        setModule({ id: moduleSnap.id, ...(moduleSnap.data() as Omit<Module, "id">) });
       }
 
       const lessonsQuery = query(
-        collection(db, "courses", kursId, "modules", modulId, "lessons"),
+        collection(db, "courses", kursId!, "modules", modulId!, "lessons"),
         orderBy("order")
       );
       const lessonsSnap = await getDocs(lessonsQuery);
-      setLessons(lessonsSnap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      setLessons(lessonsSnap.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<Lesson, "id">),
+      })));
       setLoading(false);
     }
 
@@ -56,12 +62,12 @@ export default function ModuleDetailPage() {
         Zurück zum Kurs
       </Button>
 
-      <Typography variant="h4" fontWeight={700} gutterBottom>
+      <Typography variant="h4" sx={{ fontWeight: 700 }} gutterBottom>
         {module?.title}
       </Typography>
       <Divider sx={{ mb: 3 }} />
 
-      <Typography variant="h5" fontWeight={600} mb={2}>
+      <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
         Lektionen
       </Typography>
 
@@ -79,10 +85,10 @@ export default function ModuleDetailPage() {
             >
               <CardContent sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <Box>
-                  <Typography variant="overline" color="text.secondary">
+                  <Typography variant="overline" sx={{ color: "text.secondary" }}>
                     Lektion {index + 1}
                   </Typography>
-                  <Typography variant="h6" fontWeight={600}>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
                     {lesson.title}
                   </Typography>
                 </Box>
