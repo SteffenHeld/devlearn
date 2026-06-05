@@ -1,4 +1,4 @@
-/* ── Wrapper ─────────────────────────────────────────────── */
+/* Wrapper */
 .dl-landing {
     position: relative;
     min-height: 100vh;
@@ -9,7 +9,7 @@
     transition: background 0.3s;
 }
 
-/* ── Dark Mode ───────────────────────────────────────────── */
+/* Dark Mode */
 .dl-dark {
     background: #12111e;
 }
@@ -148,7 +148,7 @@
     color: #5550a0;
 }
 
-/* ── SVG-Hintergrund ─────────────────────────────────────── */
+/* SVG-Hintergrund */
 .dl-diag-bg {
     position: absolute;
     inset: 0;
@@ -195,7 +195,7 @@
     opacity: 0.4;
 }
 
-/* ── Header / Navigation ─────────────────────────────────── */
+/* Header / Navigation */
 .dl-header {
     position: relative;
     z-index: 10;
@@ -238,7 +238,7 @@
     color: #534AB7;
 }
 
-/* ── Dark-Mode-Toggle ────────────────────────────────────── */
+/* Dark-Mode-Toggle */
 .dl-theme-toggle {
     display: flex;
     align-items: center;
@@ -259,7 +259,7 @@
     border-color: #7F77DD;
 }
 
-/* ── Registrieren-Button ─────────────────────────────────── */
+/* Registrieren-Button */
 .dl-register-btn {
     font-size: 13px;
     font-weight: 500;
@@ -276,12 +276,13 @@
     background: rgba(127, 119, 221, 0.12);
 }
 
-/* ── Hero ────────────────────────────────────────────────── */
+/* Hero */
 .dl-hero {
     position: relative;
     z-index: 10;
     padding: 100px 48px 40px;
     max-width: 520px;
+    margin-left: clamp(48px, 20vw, 450px);
 }
 
 .dl-hero-tag {
