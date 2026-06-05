@@ -1,92 +1,257 @@
-import { useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Box, Button, Card, CardActionArea, CardContent,
-  CircularProgress, Divider, Typography,
-} from "@mui/material";
-import AddIcon from "@mui/icons-material/Add";
-import Layout from "../components/layout/Layout";
-import { useAuth } from "../context/AuthContext";
-import useCourses from "../hooks/useCourses";
-import { Course } from "../types";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebase/firebase";
+import { useThemeToggle } from "../context/ThemeContext";
+import { useAuth } from "../hooks/useAuth";
+import { useCourses } from "../hooks/useCourses";
+import "./devlearn.css";
+
+/* ── Icons ────────────────────────────────────────────────────── */
+const IconDashboard = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+  </svg>
+);
+const IconBook = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+  </svg>
+);
+const IconUsers = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+    <circle cx="9" cy="7" r="4"/>
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+const IconPlus = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+const IconEdit = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+const IconLogout = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+const IconSun = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+const IconMoon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+);
+
+const bannerEmoji: Record<string, string> = {
+  "HTML/CSS/JS": "🌐",
+  "React/Vite/TS": "⚛️",
+  "Figma": "🎨",
+  "Framer": "🪄",
+};
+
+type Tab = "courses" | "students";
 
 export default function TeacherDashboard() {
-  const { user } = useAuth();
-  const { courses, loading, error } = useCourses();
   const navigate = useNavigate();
+  const { mode, toggleTheme } = useThemeToggle();
+  const darkMode = mode === "dark";
+  const { user } = useAuth();
+  const { courses } = useCourses();
+  const [activeTab, setActiveTab] = useState<Tab>("courses");
 
-  const myCourses = useMemo<Course[]>(() => {
-    return courses.filter((course) => course.createdBy === user?.uid);
-  }, [courses, user]);
+  const handleLogout = async () => {
+    navigate("/");
+    await signOut(auth);
+  };
 
-  const grouped = useMemo<Record<string, Course[]>>(() => {
-    return myCourses.reduce<Record<string, Course[]>>((acc, course) => {
-      const cat = course.category ?? "Sonstige";
-      if (!acc[cat]) acc[cat] = [];
-      acc[cat].push(course);
-      return acc;
-    }, {});
-  }, [myCourses]);
+  const initials = (user?.displayName ?? "L")
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
-  if (loading) return <CircularProgress sx={{ m: 4 }} />;
-  if (error) return <Typography color="error">{error}</Typography>;
+  const totalLessons = courses.reduce((sum, c) => sum + (c.lessonCount ?? 0), 0);
 
   return (
-    <Layout>
-      <Box sx={{
-        display: "flex",
-        flexDirection: { xs: "column", sm: "row" },
-        justifyContent: "space-between",
-        alignItems: { xs: "flex-start", sm: "center" },
-        gap: 2,
-        mb: 2,
-      }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Teacher Dashboard
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate("/teacher/kurse?newCourse=true")}
-        >
-          Neuer Kurs
-        </Button>
-      </Box>
+    <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      <Typography variant="body1" sx={{ color: "text.secondary", mb: 4 }}>
-        Hier siehst du alle Kurse die du erstellt hast.
-      </Typography>
+      {/* ── Sidebar ───────────────────────────────────────────── */}
+      <aside className="dl-sidebar" aria-label="Navigation">
+        <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
 
-      {myCourses.length === 0 ? (
-        <Typography color="text.secondary">
-          Du hast noch keine Kurse erstellt.
-        </Typography>
-      ) : (
-        Object.entries(grouped).map(([category, items]) => (
-          <Box key={category} sx={{ mb: 5, mt: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-              {category}
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-              {items.map((course) => (
-                <Card key={course.id} sx={{ width: 280, flexShrink: 0 }} elevation={2}>
-                  <CardActionArea onClick={() => navigate(`/teacher/kurse/${course.id}`)}>
-                    <CardContent>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
-                        {course.title}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                        {course.description}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              ))}
-            </Box>
-          </Box>
-        ))
-      )}
-    </Layout>
+        <p className="dl-sidebar-section">Lehrer-Panel</p>
+        <nav className="dl-sidebar-nav">
+          <button className="dl-sidebar-link active" aria-current="page">
+            <IconDashboard /> Dashboard
+          </button>
+          <button className="dl-sidebar-link" onClick={() => navigate("/courses")}>
+            <IconBook /> Kurse verwalten
+          </button>
+          <button className="dl-sidebar-link">
+            <IconUsers /> Schüler
+          </button>
+        </nav>
+
+        <div className="dl-sidebar-footer">
+          <button className="dl-sidebar-link" onClick={handleLogout} style={{ color: "var(--dl-coral-400)" }}>
+            <IconLogout /> Abmelden
+          </button>
+          <div className="dl-sidebar-user" style={{ marginTop: 8 }}>
+            <div className="dl-avatar">{initials}</div>
+            <div>
+              <div className="dl-sidebar-user-name">{user?.displayName ?? "Lehrer"}</div>
+              <div className="dl-sidebar-user-role">Lehrer</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ── Hauptbereich ──────────────────────────────────────── */}
+      <main className="dl-main">
+        {/* Top Bar */}
+        <div className="dl-topbar">
+          <span className="dl-topbar-title">Lehrer-Dashboard</span>
+          <div className="dl-topbar-actions">
+            <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => navigate("/courses/new")}>
+              <IconPlus /> Neuer Kurs
+            </button>
+            <button className="dl-theme-toggle" onClick={toggleTheme} aria-label={darkMode ? "Light Mode" : "Dark Mode"}>
+              {darkMode ? <IconSun /> : <IconMoon />}
+            </button>
+          </div>
+        </div>
+
+        {/* Page */}
+        <div className="dl-page">
+          <div className="dl-page-header">
+            <h1 className="dl-page-title">Hallo, {user?.displayName?.split(" ")[0] ?? "Lehrer"} 👋</h1>
+            <p className="dl-page-sub">Verwalte deine Kurse, Module und Lektionen.</p>
+          </div>
+
+          {/* Stats */}
+          <div className="dl-stats-grid">
+            <div className="dl-stat">
+              <p className="dl-stat-label">Kurse</p>
+              <p className="dl-stat-value dl-stat-value--violet">{courses.length}</p>
+            </div>
+            <div className="dl-stat">
+              <p className="dl-stat-label">Module</p>
+              <p className="dl-stat-value">{courses.reduce((s, c) => s + (c.moduleCount ?? 0), 0)}</p>
+            </div>
+            <div className="dl-stat">
+              <p className="dl-stat-label">Lektionen</p>
+              <p className="dl-stat-value dl-stat-value--teal">{totalLessons}</p>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: "1px solid var(--dl-border)", paddingBottom: 0 }}>
+            {(["courses", "students"] as Tab[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  borderBottom: activeTab === tab ? "2px solid var(--dl-violet-400)" : "2px solid transparent",
+                  padding: "10px 16px",
+                  fontFamily: "var(--dl-font)",
+                  fontSize: 14,
+                  fontWeight: activeTab === tab ? 600 : 400,
+                  color: activeTab === tab ? "var(--dl-violet-400)" : "var(--dl-text-muted)",
+                  cursor: "pointer",
+                  marginBottom: -1,
+                  transition: "color 0.15s, border-color 0.15s",
+                }}
+                aria-selected={activeTab === tab}
+              >
+                {tab === "courses" ? "Meine Kurse" : "Schüler"}
+              </button>
+            ))}
+          </div>
+
+          {/* Kurse Tab */}
+          {activeTab === "courses" && (
+            <div className="dl-section">
+              {courses.length === 0 ? (
+                <div className="dl-empty">
+                  <div className="dl-empty-icon">📚</div>
+                  <p className="dl-empty-text">Noch keine Kurse vorhanden.</p>
+                  <button className="dl-btn dl-btn--primary" onClick={() => navigate("/courses/new")}>
+                    <IconPlus /> Ersten Kurs erstellen
+                  </button>
+                </div>
+              ) : (
+                <div className="dl-table-wrap">
+                  <table className="dl-table">
+                    <thead>
+                      <tr>
+                        <th>Kurs</th>
+                        <th>Kategorie</th>
+                        <th>Module</th>
+                        <th>Lektionen</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {courses.map((course) => {
+                        const cat = course.category ?? "HTML/CSS/JS";
+                        return (
+                          <tr key={course.id}>
+                            <td>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                <span style={{ fontSize: 20 }}>{bannerEmoji[cat] ?? "📖"}</span>
+                                <span style={{ fontWeight: 500 }}>{course.title}</span>
+                              </div>
+                            </td>
+                            <td>
+                              <span className="dl-badge dl-badge--violet">{cat}</span>
+                            </td>
+                            <td style={{ color: "var(--dl-text-muted)" }}>{course.moduleCount ?? 0}</td>
+                            <td style={{ color: "var(--dl-text-muted)" }}>{course.lessonCount ?? 0}</td>
+                            <td>
+                              <button
+                                className="dl-btn dl-btn--ghost dl-btn--sm"
+                                onClick={() => navigate(`/courses/${course.id}`)}
+                              >
+                                <IconEdit /> Bearbeiten
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Schüler Tab */}
+          {activeTab === "students" && (
+            <div className="dl-empty">
+              <div className="dl-empty-icon">👥</div>
+              <p className="dl-empty-text">Schüler-Verwaltung kommt bald.</p>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }

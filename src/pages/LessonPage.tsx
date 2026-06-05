@@ -4,15 +4,48 @@ import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { useAuth } from "../context/AuthContext";
 import { Lesson } from "../types";
-import Layout from "../components/layout/Layout";
-import {
-  Typography, Box, Button, CircularProgress,
-  Divider, Paper, Chip
-} from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useThemeToggle } from "../context/ThemeContext";
+import "./devlearn.css";
+
+/* ── Icons ────────────────────────────────────────────────────── */
+const IconBack = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+const IconCheckCircle = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+    <polyline points="22 4 12 14.01 9 11.01"/>
+  </svg>
+);
+const IconNext = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+  </svg>
+);
+const IconCheck = () => (
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="20 6 9 17 4 12"/>
+  </svg>
+);
+const IconSun = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+const IconMoon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+);
 
 export default function LessonPage() {
+  // Gleiche Param-Namen wie im Original
   const { kursId, modulId, lektionId } = useParams<{
     kursId: string;
     modulId: string;
@@ -20,10 +53,15 @@ export default function LessonPage() {
   }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [lesson, setLesson] = useState<Lesson | null>(null);
-  const [completed, setCompleted] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { mode, toggleTheme } = useThemeToggle();
+  const darkMode = mode === "dark";
 
+  const [lesson, setLesson]       = useState<Lesson | null>(null);
+  const [completed, setCompleted] = useState<boolean>(false);
+  const [saving, setSaving]       = useState<boolean>(false);
+  const [loading, setLoading]     = useState<boolean>(true);
+
+  // Gleiche Firestore-Logik wie im Original
   useEffect(() => {
     if (!kursId || !modulId || !lektionId || !user) return;
 
@@ -35,6 +73,7 @@ export default function LessonPage() {
         setLesson({ id: lessonSnap.id, ...(lessonSnap.data() as Omit<Lesson, "id">) });
       }
 
+      // Fortschritt pro Lektion — Struktur wie im Original: users/{uid}/progress/{lektionId}
       const progressSnap = await getDoc(
         doc(db, "users", user!.uid, "progress", lektionId!)
       );
@@ -48,74 +87,248 @@ export default function LessonPage() {
     fetchData();
   }, [kursId, modulId, lektionId, user]);
 
+  // Gleiche handleComplete-Logik wie im Original
   async function handleComplete(): Promise<void> {
-    if (!user || !lektionId) return;
+    if (!user || !lektionId || saving) return;
+    setSaving(true);
     await setDoc(doc(db, "users", user.uid, "progress", lektionId), {
       completed: true,
       completedAt: Timestamp.now(),
     });
     setCompleted(true);
+    setSaving(false);
   }
 
-  if (loading) return (
-    <Layout>
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
-        <CircularProgress />
-      </Box>
-    </Layout>
-  );
+  if (loading) {
+    return (
+      <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
+        <main className="dl-main">
+          <div className="dl-page">
+            <div className="dl-empty">
+              <p style={{ color: "var(--dl-text-faint)", fontSize: 14 }}>Lektion wird geladen…</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
-    <Layout>
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}
-        sx={{ mb: 2 }}
-      >
-        Zurück zum Modul
-      </Button>
+    <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          {lesson?.title}
-        </Typography>
-        {completed && (
-          <Chip
-            icon={<CheckCircleIcon />}
-            label="Abgeschlossen"
-            color="success"
-            size="small"
-          />
-        )}
-      </Box>
-      <Divider sx={{ mb: 3 }} />
+      {/* ── Sidebar ───────────────────────────────────────────── */}
+      <aside className="dl-sidebar" aria-label="Navigation">
+        <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
+        <p className="dl-sidebar-section">Navigation</p>
+        <nav className="dl-sidebar-nav">
+          <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Dashboard
+          </button>
+          <button className="dl-sidebar-link" onClick={() => navigate("/kurse")}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            Alle Kurse
+          </button>
+          <button className="dl-sidebar-link" onClick={() => navigate(`/kurse/${kursId}`)}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            Zum Kurs
+          </button>
+          <button className="dl-sidebar-link" onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}>
+            <span style={{
+              width: 20, height: 20, borderRadius: "50%",
+              background: "var(--dl-violet-50)", color: "var(--dl-violet-600)",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              fontSize: 11, fontWeight: 600, flexShrink: 0,
+            }}>M</span>
+            Zum Modul
+          </button>
+          <div className="dl-sidebar-link active" style={{ cursor: "default" }} aria-current="page">
+            <span style={{
+              width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+              background: completed ? "var(--dl-teal-400)" : "var(--dl-violet-400)",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {completed
+                ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                : null
+              }
+            </span>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {lesson?.title ?? "Lektion"}
+            </span>
+          </div>
+        </nav>
+      </aside>
 
-      <Paper elevation={0} sx={{ p: 3, mb: 4, backgroundColor: "background.paper", borderRadius: 2 }}>
-        <Typography variant="body1" sx={{ lineHeight: 1.8 }}>
-          {lesson?.content}
-        </Typography>
-      </Paper>
+      {/* ── Main ──────────────────────────────────────────────── */}
+      <main className="dl-main">
+        {/* Top Bar */}
+        <div className="dl-topbar">
+          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}>
+            <IconBack /> Zurück zum Modul
+          </button>
+          <div className="dl-topbar-actions">
+            <button className="dl-theme-toggle" onClick={toggleTheme} aria-label={darkMode ? "Light Mode" : "Dark Mode"}>
+              {darkMode ? <IconSun /> : <IconMoon />}
+            </button>
+          </div>
+        </div>
 
-      {!completed && (
-        <Button
-          variant="contained"
-          size="large"
-          startIcon={<CheckCircleIcon />}
-          onClick={handleComplete}
-        >
-          Lektion abschließen
-        </Button>
-      )}
+        <div className="dl-page">
+          {/* Breadcrumb */}
+          <nav className="dl-breadcrumb" aria-label="Breadcrumb">
+            <span role="button" onClick={() => navigate("/kurse")}>Kurse</span>
+            <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
+            <span role="button" onClick={() => navigate(`/kurse/${kursId}`)}>Kurs</span>
+            <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
+            <span role="button" onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}>Modul</span>
+            <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
+            <span className="dl-breadcrumb-current">{lesson?.title}</span>
+          </nav>
 
-      {completed && (
-        <Button
-          variant="outlined"
-          size="large"
-          onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}
-        >
-          Weiter zum Modul
-        </Button>
-      )}
-    </Layout>
+          {/* Zweispaltiges Layout: Content + Status-Sidebar */}
+          <div className="dl-lesson-layout">
+
+            {/* ── Linke Spalte: Inhalt ────────────────────────── */}
+            <div>
+              {/* Titel + Badge */}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
+                <h1 className="dl-page-title" style={{ marginBottom: 0 }}>{lesson?.title}</h1>
+                {completed && (
+                  <span className="dl-badge dl-badge--teal" style={{ marginTop: 6, padding: "4px 12px", fontSize: 12 }}>
+                    <IconCheck /> Abgeschlossen
+                  </span>
+                )}
+              </div>
+
+              <div className="dl-divider" style={{ marginTop: 16 }} />
+
+              {/* Lektion-Inhalt */}
+              <div className="dl-lesson-content">
+                {lesson?.content ? (
+                  /* Wenn content HTML enthält, rendern — sonst als Text */
+                  lesson.content.trim().startsWith("<")
+                    ? <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
+                    : <p>{lesson.content}</p>
+                ) : (
+                  <div className="dl-empty" style={{ textAlign: "left", padding: "40px 0" }}>
+                    <div className="dl-empty-icon">✏️</div>
+                    <p className="dl-empty-text">Kein Inhalt für diese Lektion vorhanden.</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="dl-divider" />
+
+              {/* Aktions-Buttons */}
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                {!completed && (
+                  <button
+                    className="dl-btn dl-btn--teal"
+                    onClick={handleComplete}
+                    disabled={saving}
+                    style={{ padding: "12px 24px" }}
+                  >
+                    <IconCheckCircle />
+                    {saving ? "Wird gespeichert…" : "Lektion abschließen"}
+                  </button>
+                )}
+
+                {completed && (
+                  <button
+                    className="dl-btn dl-btn--ghost"
+                    onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}
+                    style={{ padding: "12px 24px" }}
+                  >
+                    <IconNext /> Weiter zum Modul
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* ── Rechte Spalte: Status-Card ───────────────────── */}
+            <aside>
+              <div className="dl-card">
+                <p style={{
+                  fontSize: 12, fontWeight: 600, color: "var(--dl-text-faint)",
+                  textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 16,
+                }}>
+                  Status
+                </p>
+
+                {/* Abschluss-Status */}
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: "14px 16px", borderRadius: "var(--dl-radius-md)",
+                  background: completed ? "var(--dl-teal-50)" : "var(--dl-bg-muted)",
+                  border: `1px solid ${completed ? "var(--dl-teal-100)" : "var(--dl-border)"}`,
+                  marginBottom: 16, transition: "all 0.3s",
+                }}>
+                  <div style={{
+                    width: 32, height: 32, borderRadius: "50%",
+                    background: completed ? "var(--dl-teal-400)" : "var(--dl-border)",
+                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                    transition: "background 0.3s",
+                  }}>
+                    {completed && <IconCheck />}
+                  </div>
+                  <div>
+                    <p style={{
+                      fontSize: 13, fontWeight: 600,
+                      color: completed ? "var(--dl-teal-600)" : "var(--dl-text-primary)",
+                      marginBottom: 2,
+                    }}>
+                      {completed ? "Abgeschlossen" : "Offen"}
+                    </p>
+                    <p style={{ fontSize: 12, color: "var(--dl-text-faint)" }}>
+                      {completed ? "Gut gemacht!" : "Lektion noch nicht beendet"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Navigations-Links */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <button
+                    className="dl-btn dl-btn--ghost"
+                    style={{ justifyContent: "flex-start", fontSize: 13 }}
+                    onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}
+                  >
+                    <IconBack /> Zurück zum Modul
+                  </button>
+                  <button
+                    className="dl-btn dl-btn--ghost"
+                    style={{ justifyContent: "flex-start", fontSize: 13 }}
+                    onClick={() => navigate(`/kurse/${kursId}`)}
+                  >
+                    <IconBack /> Zurück zum Kurs
+                  </button>
+                </div>
+
+                {/* Abschließen-Button in Sidebar (wenn noch offen) */}
+                {!completed && (
+                  <button
+                    className="dl-btn dl-btn--teal"
+                    style={{ width: "100%", justifyContent: "center", marginTop: 16 }}
+                    onClick={handleComplete}
+                    disabled={saving}
+                  >
+                    <IconCheckCircle />
+                    {saving ? "Speichert…" : "Abschließen"}
+                  </button>
+                )}
+              </div>
+            </aside>
+
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

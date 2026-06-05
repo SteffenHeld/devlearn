@@ -1,175 +1,262 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, collection, getDocs, addDoc, orderBy, query } from "firebase/firestore";
-import { db } from "../firebase/firebase";
-import { Module, Lesson } from "../types";
-import Layout from "../components/layout/Layout";
-import {
-  Typography, Box, Card, CardContent,
-  Button, TextField, Dialog, DialogTitle, DialogContent,
-  DialogActions, CircularProgress, Divider
-} from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import AddIcon from "@mui/icons-material/Add";
+import { useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useThemeToggle } from "../context/ThemeContext";
+import { useCourses } from "../hooks/useCourses";
+import "./devlearn.css";
+
+const IconPlus = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+  </svg>
+);
+const IconBack = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+  </svg>
+);
+const IconEdit = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+  </svg>
+);
+const IconSun = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+const IconMoon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+);
+
+const bannerEmoji: Record<string, string> = {
+  "HTML/CSS/JS": "🌐", "React/Vite/TS": "⚛️", "Figma": "🎨", "Framer": "🪄",
+};
 
 export default function TeacherModuleDetailPage() {
-  const { kursId, modulId } = useParams<{ kursId: string; modulId: string }>();
+  const { courseId, moduleId } = useParams<{ courseId: string; moduleId: string }>();
   const navigate = useNavigate();
-  const [module, setModule] = useState<Module | null>(null);
-  const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [open, setOpen] = useState<boolean>(false);
-  const [title, setTitle] = useState<string>("");
-  const [content, setContent] = useState<string>("");
-  const [teacherContent, setTeacherContent] = useState<string>("");
-  const [saving, setSaving] = useState<boolean>(false);
+  const { mode, toggleTheme } = useThemeToggle();
+  const darkMode = mode === "dark";
+  const { courses, addLesson } = useCourses() as any;
 
-  useEffect(() => {
-    if (!kursId || !modulId) return;
+  const course = courses.find((c: any) => c.id === courseId);
+  const mod = course?.modules?.find((m: any) => m.id === moduleId);
+  const lessons: any[] = mod?.lessons ?? [];
 
-    async function fetchData(): Promise<void> {
-      const moduleSnap = await getDoc(
-        doc(db, "courses", kursId!, "modules", modulId!)
-      );
-      if (moduleSnap.exists()) {
-        setModule({ id: moduleSnap.id, ...(moduleSnap.data() as Omit<Module, "id">) });
-      }
+  const [showLessonForm, setShowLessonForm] = useState<boolean>(false);
+  const [lessonTitle, setLessonTitle]       = useState<string>("");
+  const [lessonContent, setLessonContent]   = useState<string>("");
+  const [lessonDuration, setLessonDuration] = useState<string>("");
+  const [savingLesson, setSavingLesson]     = useState<boolean>(false);
+  const [lessonError, setLessonError]       = useState<string>("");
 
-      const lessonsQuery = query(
-        collection(db, "courses", kursId!, "modules", modulId!, "lessons"),
-        orderBy("order")
-      );
-      const lessonsSnap = await getDocs(lessonsQuery);
-      setLessons(lessonsSnap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as Omit<Lesson, "id">),
-      })));
-      setLoading(false);
-    }
-
-    fetchData();
-  }, [kursId, modulId]);
-
-  async function handleCreateLesson(): Promise<void> {
-    if (!title.trim() || !kursId || !modulId) return;
-    setSaving(true);
-    await addDoc(
-      collection(db, "courses", kursId, "modules", modulId, "lessons"),
-      {
-        title,
-        content,
-        teacherContent,
-        order: lessons.length + 1,
-      }
+  if (!course || !mod) {
+    return (
+      <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
+        <main className="dl-main"><div className="dl-page">
+          <div className="dl-empty">
+            <div className="dl-empty-icon">🔍</div>
+            <p className="dl-empty-text">Modul nicht gefunden.</p>
+            <button className="dl-btn dl-btn--ghost" onClick={() => navigate(`/teacher/courses/${courseId}`)}><IconBack /> Zurück</button>
+          </div>
+        </div></main>
+      </div>
     );
-    const lessonsQuery = query(
-      collection(db, "courses", kursId, "modules", modulId, "lessons"),
-      orderBy("order")
-    );
-    const lessonsSnap = await getDocs(lessonsQuery);
-    setLessons(lessonsSnap.docs.map((d) => ({
-      id: d.id,
-      ...(d.data() as Omit<Lesson, "id">),
-    })));
-    setTitle("");
-    setContent("");
-    setTeacherContent("");
-    setSaving(false);
-    setOpen(false);
   }
 
-  if (loading) return (
-    <Layout>
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 6 }}>
-        <CircularProgress />
-      </Box>
-    </Layout>
-  );
+  const handleAddLesson = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!lessonTitle.trim()) { setLessonError("Bitte einen Titel eingeben."); return; }
+    setSavingLesson(true); setLessonError("");
+    try {
+      await addLesson(courseId, moduleId, {
+        title: lessonTitle.trim(),
+        content: lessonContent.trim(),
+        duration: lessonDuration ? parseInt(lessonDuration) : null,
+      });
+      setLessonTitle(""); setLessonContent(""); setLessonDuration(""); setShowLessonForm(false);
+    } catch { setLessonError("Fehler beim Erstellen."); }
+    finally { setSavingLesson(false); }
+  };
+
+  const cat = course.category ?? "HTML/CSS/JS";
+  const modIndex = (course.modules ?? []).findIndex((m: any) => m.id === moduleId);
 
   return (
-    <Layout>
-      <Button
-        startIcon={<ArrowBackIcon />}
-        onClick={() => navigate(`/teacher/kurse/${kursId}`)}
-        sx={{ mb: 2 }}
-      >
-        Zurück zum Kurs
-      </Button>
+    <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      <Typography variant="h4" sx={{ fontWeight: 700 }} gutterBottom>
-        {module?.title}
-      </Typography>
-      <Divider sx={{ mb: 3 }} />
+      {/* Sidebar */}
+      <aside className="dl-sidebar" aria-label="Navigation">
+        <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
+        <p className="dl-sidebar-section">Lehrer-Panel</p>
+        <nav className="dl-sidebar-nav">
+          <button className="dl-sidebar-link" onClick={() => navigate("/teacher/courses")}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            Kurse
+          </button>
+          <button className="dl-sidebar-link" onClick={() => navigate(`/teacher/courses/${courseId}`)}>
+            <span style={{ fontSize: 17 }}>{bannerEmoji[cat]}</span>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.title}</span>
+          </button>
+          <div className="dl-sidebar-link active" style={{ cursor: "default" }}>
+            <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--dl-violet-50)", color: "var(--dl-violet-600)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+              {modIndex + 1}
+            </span>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{mod.title}</span>
+          </div>
+        </nav>
+        {lessons.length > 0 && (
+          <>
+            <p className="dl-sidebar-section" style={{ marginTop: 16 }}>Lektionen</p>
+            <nav className="dl-sidebar-nav">
+              {lessons.map((l: any, i: number) => (
+                <div key={l.id} className="dl-sidebar-link" style={{ fontSize: 12, cursor: "default", gap: 8 }}>
+                  <span style={{ fontSize: 11, color: "var(--dl-text-faint)", minWidth: 16 }}>{i + 1}.</span>
+                  <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.title}</span>
+                </div>
+              ))}
+            </nav>
+          </>
+        )}
+      </aside>
 
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: 600 }}>
-          Lektionen
-        </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
-          Neue Lektion
-        </Button>
-      </Box>
+      <main className="dl-main">
+        <div className="dl-topbar">
+          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/teacher/courses/${courseId}`)}>
+            <IconBack /> {course.title}
+          </button>
+          <div className="dl-topbar-actions">
+            <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => setShowLessonForm(true)}>
+              <IconPlus /> Neue Lektion
+            </button>
+            <button className="dl-theme-toggle" onClick={toggleTheme} aria-label={darkMode ? "Light Mode" : "Dark Mode"}>
+              {darkMode ? <IconSun /> : <IconMoon />}
+            </button>
+          </div>
+        </div>
 
-      {lessons.length === 0 && (
-        <Typography color="text.secondary">Noch keine Lektionen vorhanden.</Typography>
-      )}
+        <div className="dl-page">
+          <nav className="dl-breadcrumb" aria-label="Breadcrumb">
+            <span role="button" onClick={() => navigate("/teacher/courses")}>Kurse</span>
+            <span className="dl-breadcrumb-sep">/</span>
+            <span role="button" onClick={() => navigate(`/teacher/courses/${courseId}`)}>{course.title}</span>
+            <span className="dl-breadcrumb-sep">/</span>
+            <span className="dl-breadcrumb-current">{mod.title}</span>
+          </nav>
 
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {lessons.map((lesson, index) => (
-          <Card key={lesson.id}>
-            <CardContent>
-              <Typography variant="overline" sx={{ color: "text.secondary" }}>
-                Lektion {index + 1}
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                {lesson.title}
-              </Typography>
-              <Typography variant="body2" sx={{ color: "text.secondary", mt: 1 }}>
-                {lesson.content}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
+          <div className="dl-page-header">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+              <div>
+                <h1 className="dl-page-title">{mod.title}</h1>
+                {mod.description && <p className="dl-page-sub">{mod.description}</p>}
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <span className="dl-badge dl-badge--gray">{lessons.length} Lektionen</span>
+              </div>
+            </div>
+          </div>
 
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
-        <DialogTitle>Neue Lektion erstellen</DialogTitle>
-        <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
-          <TextField
-            label="Titel"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            fullWidth
-            required
-          />
-          <TextField
-            label="Lerninhalt (für Schüler)"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            fullWidth
-            multiline
-            rows={4}
-          />
-          <TextField
-            label="Lehrerinhalt (nur für Teacher sichtbar)"
-            value={teacherContent}
-            onChange={(e) => setTeacherContent(e.target.value)}
-            fullWidth
-            multiline
-            rows={3}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Abbrechen</Button>
-          <Button
-            variant="contained"
-            onClick={handleCreateLesson}
-            disabled={saving || !title.trim()}
-          >
-            {saving ? "Speichern..." : "Erstellen"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Layout>
+          {/* Neue Lektion — Formular */}
+          {showLessonForm && (
+            <div className="dl-card" style={{ marginBottom: 24, borderColor: "var(--dl-violet-200)" }}>
+              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "var(--dl-text-primary)" }}>Neue Lektion</h2>
+              <form onSubmit={handleAddLesson} noValidate>
+                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "0 16px" }}>
+                  <div className="dl-field">
+                    <label htmlFor="lesson-title">Lektionstitel</label>
+                    <input id="lesson-title" type="text" placeholder="z.B. Was ist HTML?" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} required />
+                  </div>
+                  <div className="dl-field">
+                    <label htmlFor="lesson-duration">Dauer (Min.)</label>
+                    <input id="lesson-duration" type="number" min="1" max="120" placeholder="10" value={lessonDuration} onChange={(e) => setLessonDuration(e.target.value)} />
+                  </div>
+                </div>
+                <div className="dl-field">
+                  <label htmlFor="lesson-content">Inhalt (HTML oder Markdown)</label>
+                  <textarea
+                    id="lesson-content"
+                    placeholder="<h2>Einführung</h2><p>In dieser Lektion lernst du…</p>"
+                    value={lessonContent}
+                    onChange={(e) => setLessonContent(e.target.value)}
+                    style={{ minHeight: 140, fontFamily: "'Fira Code', monospace", fontSize: 13 }}
+                  />
+                </div>
+                {lessonError && <p className="dl-alert dl-alert--error">{lessonError}</p>}
+                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowLessonForm(false); setLessonError(""); }}>Abbrechen</button>
+                  <button type="submit" className="dl-btn dl-btn--primary" disabled={savingLesson}>{savingLesson ? "Erstellt…" : "Lektion erstellen"}</button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Lektionsliste */}
+          <div className="dl-section">
+            <div className="dl-section-header">
+              <h2 className="dl-section-title">Lektionen ({lessons.length})</h2>
+              {lessons.length > 0 && (
+                <button className="dl-btn dl-btn--subtle dl-btn--sm" onClick={() => setShowLessonForm(true)}>
+                  <IconPlus /> Lektion hinzufügen
+                </button>
+              )}
+            </div>
+
+            {lessons.length === 0 && !showLessonForm ? (
+              <div className="dl-empty">
+                <div className="dl-empty-icon">📝</div>
+                <p className="dl-empty-text">Noch keine Lektionen. Füge die erste hinzu.</p>
+                <button className="dl-btn dl-btn--primary" onClick={() => setShowLessonForm(true)}>
+                  <IconPlus /> Erste Lektion erstellen
+                </button>
+              </div>
+            ) : (
+              <div className="dl-table-wrap">
+                <table className="dl-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: 40 }}>#</th>
+                      <th>Titel</th>
+                      <th>Dauer</th>
+                      <th>Inhalt</th>
+                      <th style={{ width: 100 }}></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lessons.map((lesson: any, i: number) => (
+                      <tr key={lesson.id}>
+                        <td style={{ color: "var(--dl-text-faint)", fontSize: 13 }}>{i + 1}</td>
+                        <td style={{ fontWeight: 500 }}>{lesson.title}</td>
+                        <td style={{ color: "var(--dl-text-muted)" }}>
+                          {lesson.duration ? `${lesson.duration} Min.` : <span style={{ color: "var(--dl-text-faint)" }}>–</span>}
+                        </td>
+                        <td>
+                          {lesson.content
+                            ? <span className="dl-badge dl-badge--teal">Vorhanden</span>
+                            : <span className="dl-badge dl-badge--gray">Leer</span>
+                          }
+                        </td>
+                        <td>
+                          <button className="dl-btn dl-btn--ghost dl-btn--sm"
+                            onClick={() => navigate(`/teacher/courses/${courseId}/modules/${moduleId}/lessons/${lesson.id}`)}>
+                            <IconEdit /> Edit
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }
