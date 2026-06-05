@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useThemeToggle } from "../context/ThemeContext";
-import { useCourses } from "../hooks/useCourses";
-import "./devlearn.css";
+import useCourses from "../hooks/useCourses";
+import "../devlearn.css";
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -205,7 +205,7 @@ export default function TeacherCoursesPage() {
                           <div style={{ display: "flex", gap: 6 }}>
                             <button
                               className="dl-btn dl-btn--subtle dl-btn--sm"
-                              onClick={() => navigate(`/teacher/courses/${course.id}`)}
+                              onClick={() => navigate(`/teacher/kurse/${course.id}`)}
                             >
                               <IconEdit /> Bearbeiten
                             </button>

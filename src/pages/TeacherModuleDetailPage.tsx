@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useThemeToggle } from "../context/ThemeContext";
-import { useCourses } from "../hooks/useCourses";
-import "./devlearn.css";
+import useCourses from "../hooks/useCourses";
+import "../devlearn.css";
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -40,7 +40,7 @@ const bannerEmoji: Record<string, string> = {
 };
 
 export default function TeacherModuleDetailPage() {
-  const { courseId, moduleId } = useParams<{ courseId: string; moduleId: string }>();
+  const { kursId: courseId, modulId: moduleId } = useParams<{ kursId: string; modulId: string }>();
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
@@ -64,7 +64,7 @@ export default function TeacherModuleDetailPage() {
           <div className="dl-empty">
             <div className="dl-empty-icon">🔍</div>
             <p className="dl-empty-text">Modul nicht gefunden.</p>
-            <button className="dl-btn dl-btn--ghost" onClick={() => navigate(`/teacher/courses/${courseId}`)}><IconBack /> Zurück</button>
+            <button className="dl-btn dl-btn--ghost" onClick={() => navigate(`/teacher/kurse/${courseId}`)}><IconBack /> Zurück</button>
           </div>
         </div></main>
       </div>
@@ -97,11 +97,11 @@ export default function TeacherModuleDetailPage() {
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => navigate("/teacher/courses")}>
+          <button className="dl-sidebar-link" onClick={() => navigate("/teacher/kurse")}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             Kurse
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate(`/teacher/courses/${courseId}`)}>
+          <button className="dl-sidebar-link" onClick={() => navigate(`/teacher/kurse/${courseId}`)}>
             <span style={{ fontSize: 17 }}>{bannerEmoji[cat]}</span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.title}</span>
           </button>
@@ -129,7 +129,7 @@ export default function TeacherModuleDetailPage() {
 
       <main className="dl-main">
         <div className="dl-topbar">
-          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/teacher/courses/${courseId}`)}>
+          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/teacher/kurse/${courseId}`)}>
             <IconBack /> {course.title}
           </button>
           <div className="dl-topbar-actions">
@@ -144,9 +144,9 @@ export default function TeacherModuleDetailPage() {
 
         <div className="dl-page">
           <nav className="dl-breadcrumb" aria-label="Breadcrumb">
-            <span role="button" onClick={() => navigate("/teacher/courses")}>Kurse</span>
+            <span role="button" onClick={() => navigate("/teacher/kurse")}>Kurse</span>
             <span className="dl-breadcrumb-sep">/</span>
-            <span role="button" onClick={() => navigate(`/teacher/courses/${courseId}`)}>{course.title}</span>
+            <span role="button" onClick={() => navigate(`/teacher/kurse/${courseId}`)}>{course.title}</span>
             <span className="dl-breadcrumb-sep">/</span>
             <span className="dl-breadcrumb-current">{mod.title}</span>
           </nav>
@@ -244,7 +244,7 @@ export default function TeacherModuleDetailPage() {
                         </td>
                         <td>
                           <button className="dl-btn dl-btn--ghost dl-btn--sm"
-                            onClick={() => navigate(`/teacher/courses/${courseId}/modules/${moduleId}/lessons/${lesson.id}`)}>
+                            onClick={() => navigate(`/teacher/kurse/${courseId}/modules/${moduleId}/lessons/${lesson.id}`)}>
                             <IconEdit /> Edit
                           </button>
                         </td>

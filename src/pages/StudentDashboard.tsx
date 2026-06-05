@@ -3,9 +3,9 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 import { useThemeToggle } from "../context/ThemeContext";
 import { useAuth } from "../hooks/useAuth";
-import { useCourses } from "../hooks/useCourses";
+import useCourses from "../hooks/useCourses";
 import { useProgress } from "../hooks/useProgress";
-import "./devlearn.css";
+import "../devlearn.css";
 
 /* ── Sidebar-Icons ────────────────────────────────────────────── */
 const IconDashboard = () => (
@@ -115,7 +115,7 @@ export default function StudentDashboard() {
           <button className="dl-sidebar-link active" aria-current="page">
             <IconDashboard /> Dashboard
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate("/courses")}>
+          <button className="dl-sidebar-link" onClick={() => navigate("/kurse")}>
             <IconBook /> Kurse
           </button>
           <button className="dl-sidebar-link">
@@ -181,14 +181,14 @@ export default function StudentDashboard() {
           <div className="dl-section">
             <div className="dl-section-header">
               <h2 className="dl-section-title">Deine Kurse</h2>
-              <span className="dl-section-link" onClick={() => navigate("/courses")}>Alle ansehen →</span>
+              <span className="dl-section-link" onClick={() => navigate("/kurse")}>Alle ansehen →</span>
             </div>
 
             {courses.length === 0 ? (
               <div className="dl-empty">
                 <div className="dl-empty-icon">📚</div>
                 <p className="dl-empty-text">Noch keine Kurse verfügbar.</p>
-                <button className="dl-btn dl-btn--primary" onClick={() => navigate("/courses")}>
+                <button className="dl-btn dl-btn--primary" onClick={() => navigate("/kurse")}>
                   Kurse entdecken
                 </button>
               </div>
@@ -210,7 +210,7 @@ export default function StudentDashboard() {
                       onClick={() => navigate(`/courses/${course.id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={(e) => e.key === "Enter" && navigate(`/courses/${course.id}`)}
+                      onKeyDown={(e) => e.key === "Enter" && navigate(`/kurse/${course.id}`)}
                       aria-label={`Kurs: ${course.title}`}
                     >
                       <div className={`dl-course-banner dl-course-banner${variant}`}>

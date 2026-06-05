@@ -98,7 +98,7 @@ export default function LandingPage() {
           <button className="dl-btn-primary" onClick={() => navigate("/register")}>
             Jetzt starten
           </button>
-          <button className="dl-btn-ghost" onClick={() => navigate("/courses")}>
+          <button className="dl-btn-ghost" onClick={() => navigate("/kurse")}>
             Kurse ansehen
           </button>
         </div>

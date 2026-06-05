@@ -7,7 +7,7 @@ import { db } from "../firebase/firebase";
 import { Module, Lesson } from "../types";
 import { useThemeToggle } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
-import "./devlearn.css";
+import "../devlearn.css";
 
 /* ── Icons ────────────────────────────────────────────────────── */
 const IconBack = () => (

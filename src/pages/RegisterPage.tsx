@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 import { useThemeToggle } from "../context/ThemeContext";
-import "./devlearn.css";
+import "../devlearn.css";
 
 export default function RegisterPage() {
   const navigate = useNavigate();

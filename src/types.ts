@@ -19,20 +19,27 @@ export interface Course {
   description: string;
   category?: string;
   createdBy: string;
+  moduleCount?: number;
+  lessonCount?: number;
+  modules?: Module[];
 }
 
 export interface Module {
   id: string;
   title: string;
+  description?: string;
   order: number;
+  lessonCount?: number;
+  lessons?: Lesson[];
 }
 
 export interface Lesson {
   id: string;
   title: string;
-  content: string;
+  content?: string;
   teacherContent?: string;
   order?: number;
+  duration: number;
 }
 
 export interface Progress {

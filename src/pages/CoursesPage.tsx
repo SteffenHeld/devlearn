@@ -4,7 +4,7 @@ import { useThemeToggle } from "../context/ThemeContext";
 import useCourses from "../hooks/useCourses";
 import { useProgress } from "../hooks/useProgress";
 import { useAuth } from "../hooks/useAuth";
-import "./devlearn.css";
+import "../devlearn.css";
 
 /* ── Icons ────────────────────────────────────────────────────── */
 const IconSearch = () => (
@@ -97,7 +97,7 @@ export default function CoursesPage() {
           </button>
           <div className="dl-topbar-actions">
             {isTeacher && (
-              <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => navigate("/teacher/courses")}>
+              <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => navigate("/teacher/kurse")}>
                 + Kurs verwalten
               </button>
             )}

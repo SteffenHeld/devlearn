@@ -4,8 +4,8 @@ import { signOut } from "firebase/auth";
 import { auth } from "../firebase/firebase";
 import { useThemeToggle } from "../context/ThemeContext";
 import { useAuth } from "../hooks/useAuth";
-import { useCourses } from "../hooks/useCourses";
-import "./devlearn.css";
+import useCourses from "../hooks/useCourses";
+import "../devlearn.css";
 
 /* ── Icons ────────────────────────────────────────────────────── */
 const IconDashboard = () => (
@@ -56,14 +56,16 @@ const IconMoon = () => (
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
   </svg>
 );
+const IconX = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
 
 const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐",
-  "React/Vite/TS": "⚛️",
-  "Figma": "🎨",
-  "Framer": "🪄",
+  "HTML/CSS/JS": "🌐", "React/Vite/TS": "⚛️", "Figma": "🎨", "Framer": "🪄",
 };
-
+const CATEGORIES = ["HTML/CSS/JS", "React/Vite/TS", "Figma", "Framer"];
 type Tab = "courses" | "students";
 
 export default function TeacherDashboard() {
@@ -71,22 +73,48 @@ export default function TeacherDashboard() {
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
   const { user } = useAuth();
-  const { courses } = useCourses();
+  const { courses, addCourse } = useCourses() as any;
   const [activeTab, setActiveTab] = useState<Tab>("courses");
+
+  // Neuer-Kurs-Formular State — direkt im Dashboard
+  const [showForm, setShowForm]         = useState(false);
+  const [newTitle, setNewTitle]         = useState("");
+  const [newCategory, setNewCategory]   = useState("HTML/CSS/JS");
+  const [newDesc, setNewDesc]           = useState("");
+  const [saving, setSaving]             = useState(false);
+  const [formError, setFormError]       = useState("");
 
   const handleLogout = async () => {
     navigate("/");
     await signOut(auth);
   };
 
-  const initials = (user?.displayName ?? "L")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const handleCreateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) { setFormError("Bitte einen Titel eingeben."); return; }
+    setSaving(true); setFormError("");
+    try {
+      const newCourse = await addCourse({
+        title: newTitle.trim(),
+        category: newCategory,
+        description: newDesc.trim(),
+      });
+      setNewTitle(""); setNewCategory("HTML/CSS/JS"); setNewDesc("");
+      setShowForm(false);
+      // Direkt zur Kursbearbeitungs-Seite navigieren wenn addCourse die ID zurückgibt
+      if (newCourse?.id) navigate(`/teacher/kurse/${newCourse.id}`);
+      else navigate("/teacher/kurse");
+    } catch {
+      setFormError("Fehler beim Erstellen. Bitte erneut versuchen.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-  const totalLessons = courses.reduce((sum, c) => sum + (c.lessonCount ?? 0), 0);
+  const initials = (user?.displayName ?? "L")
+    .split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
+
+  const totalLessons = courses.reduce((sum: number, c: any) => sum + (c.lessonCount ?? 0), 0);
 
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
@@ -94,20 +122,19 @@ export default function TeacherDashboard() {
       {/* ── Sidebar ───────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
-
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link active" aria-current="page">
             <IconDashboard /> Dashboard
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate("/courses")}>
+          {/* FIX: /teacher/kurse statt /kurse */}
+          <button className="dl-sidebar-link" onClick={() => navigate("/teacher/kurse")}>
             <IconBook /> Kurse verwalten
           </button>
           <button className="dl-sidebar-link">
             <IconUsers /> Schüler
           </button>
         </nav>
-
         <div className="dl-sidebar-footer">
           <button className="dl-sidebar-link" onClick={handleLogout} style={{ color: "var(--dl-coral-400)" }}>
             <IconLogout /> Abmelden
@@ -124,11 +151,11 @@ export default function TeacherDashboard() {
 
       {/* ── Hauptbereich ──────────────────────────────────────── */}
       <main className="dl-main">
-        {/* Top Bar */}
         <div className="dl-topbar">
           <span className="dl-topbar-title">Lehrer-Dashboard</span>
           <div className="dl-topbar-actions">
-            <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => navigate("/courses/new")}>
+            {/* FIX: öffnet Formular im Dashboard statt /kurse/new */}
+            <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => setShowForm(true)}>
               <IconPlus /> Neuer Kurs
             </button>
             <button className="dl-theme-toggle" onClick={toggleTheme} aria-label={darkMode ? "Light Mode" : "Dark Mode"}>
@@ -137,7 +164,6 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Page */}
         <div className="dl-page">
           <div className="dl-page-header">
             <h1 className="dl-page-title">Hallo, {user?.displayName?.split(" ")[0] ?? "Lehrer"} 👋</h1>
@@ -152,7 +178,7 @@ export default function TeacherDashboard() {
             </div>
             <div className="dl-stat">
               <p className="dl-stat-label">Module</p>
-              <p className="dl-stat-value">{courses.reduce((s, c) => s + (c.moduleCount ?? 0), 0)}</p>
+              <p className="dl-stat-value">{courses.reduce((s: number, c: any) => s + (c.moduleCount ?? 0), 0)}</p>
             </div>
             <div className="dl-stat">
               <p className="dl-stat-label">Lektionen</p>
@@ -160,24 +186,74 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
+          {/* Neuer-Kurs-Formular — inline eingeblendet */}
+          {showForm && (
+            <div className="dl-card" style={{ marginBottom: 24, borderColor: "var(--dl-violet-200)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: "var(--dl-text-primary)", margin: 0 }}>
+                  Neuen Kurs erstellen
+                </h2>
+                <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => { setShowForm(false); setFormError(""); }}>
+                  <IconX />
+                </button>
+              </div>
+              <form onSubmit={handleCreateCourse} noValidate>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+                  <div className="dl-field">
+                    <label htmlFor="new-course-title">Kursname</label>
+                    <input
+                      id="new-course-title"
+                      type="text"
+                      placeholder="z.B. HTML & CSS Grundlagen"
+                      value={newTitle}
+                      onChange={(e) => setNewTitle(e.target.value)}
+                      required
+                      autoFocus
+                    />
+                  </div>
+                  <div className="dl-field">
+                    <label htmlFor="new-course-cat">Kategorie</label>
+                    <select id="new-course-cat" value={newCategory} onChange={(e) => setNewCategory(e.target.value)}>
+                      {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <div className="dl-field">
+                  <label htmlFor="new-course-desc">Beschreibung (optional)</label>
+                  <textarea
+                    id="new-course-desc"
+                    placeholder="Kurze Beschreibung des Kurses…"
+                    value={newDesc}
+                    onChange={(e) => setNewDesc(e.target.value)}
+                    style={{ minHeight: 72 }}
+                  />
+                </div>
+                {formError && <p className="dl-alert dl-alert--error">{formError}</p>}
+                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowForm(false); setFormError(""); }}>
+                    Abbrechen
+                  </button>
+                  <button type="submit" className="dl-btn dl-btn--primary" disabled={saving}>
+                    {saving ? "Wird erstellt…" : "Kurs erstellen"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
           {/* Tabs */}
-          <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: "1px solid var(--dl-border)", paddingBottom: 0 }}>
+          <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: "1px solid var(--dl-border)" }}>
             {(["courses", "students"] as Tab[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 style={{
-                  background: "transparent",
-                  border: "none",
+                  background: "transparent", border: "none",
                   borderBottom: activeTab === tab ? "2px solid var(--dl-violet-400)" : "2px solid transparent",
-                  padding: "10px 16px",
-                  fontFamily: "var(--dl-font)",
-                  fontSize: 14,
+                  padding: "10px 16px", fontFamily: "var(--dl-font)", fontSize: 14,
                   fontWeight: activeTab === tab ? 600 : 400,
                   color: activeTab === tab ? "var(--dl-violet-400)" : "var(--dl-text-muted)",
-                  cursor: "pointer",
-                  marginBottom: -1,
-                  transition: "color 0.15s, border-color 0.15s",
+                  cursor: "pointer", marginBottom: -1, transition: "color 0.15s, border-color 0.15s",
                 }}
                 aria-selected={activeTab === tab}
               >
@@ -189,11 +265,11 @@ export default function TeacherDashboard() {
           {/* Kurse Tab */}
           {activeTab === "courses" && (
             <div className="dl-section">
-              {courses.length === 0 ? (
+              {courses.length === 0 && !showForm ? (
                 <div className="dl-empty">
                   <div className="dl-empty-icon">📚</div>
                   <p className="dl-empty-text">Noch keine Kurse vorhanden.</p>
-                  <button className="dl-btn dl-btn--primary" onClick={() => navigate("/courses/new")}>
+                  <button className="dl-btn dl-btn--primary" onClick={() => setShowForm(true)}>
                     <IconPlus /> Ersten Kurs erstellen
                   </button>
                 </div>
@@ -202,15 +278,11 @@ export default function TeacherDashboard() {
                   <table className="dl-table">
                     <thead>
                       <tr>
-                        <th>Kurs</th>
-                        <th>Kategorie</th>
-                        <th>Module</th>
-                        <th>Lektionen</th>
-                        <th></th>
+                        <th>Kurs</th><th>Kategorie</th><th>Module</th><th>Lektionen</th><th></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {courses.map((course) => {
+                      {courses.map((course: any) => {
                         const cat = course.category ?? "HTML/CSS/JS";
                         return (
                           <tr key={course.id}>
@@ -220,15 +292,13 @@ export default function TeacherDashboard() {
                                 <span style={{ fontWeight: 500 }}>{course.title}</span>
                               </div>
                             </td>
-                            <td>
-                              <span className="dl-badge dl-badge--violet">{cat}</span>
-                            </td>
+                            <td><span className="dl-badge dl-badge--violet">{cat}</span></td>
                             <td style={{ color: "var(--dl-text-muted)" }}>{course.moduleCount ?? 0}</td>
                             <td style={{ color: "var(--dl-text-muted)" }}>{course.lessonCount ?? 0}</td>
                             <td>
                               <button
                                 className="dl-btn dl-btn--ghost dl-btn--sm"
-                                onClick={() => navigate(`/courses/${course.id}`)}
+                                onClick={() => navigate(`/teacher/kurse/${course.id}`)}
                               >
                                 <IconEdit /> Bearbeiten
                               </button>
