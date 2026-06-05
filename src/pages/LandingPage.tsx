@@ -15,18 +15,19 @@ export default function LandingPage() {
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/dashboard");
-    } catch {
-      setError("E-Mail oder Passwort falsch.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  e.preventDefault();
+  setError("");
+  setLoading(true);
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    navigate("/dashboard");
+  } catch {
+    setError("E-Mail oder Passwort falsch.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className={`dl-landing${darkMode ? " dl-dark" : ""}`}>
