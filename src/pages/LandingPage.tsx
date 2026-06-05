@@ -50,7 +50,7 @@ export default function LandingPage() {
       <header className="dl-header">
         <div className="dl-logo">Dev<span>Learn</span></div>
         <nav className="dl-nav">
-          <a href="#kurse">Kurse</a>
+          <a onClick={() => navigate("/kurse-entdecken")} style={{ cursor: "pointer" }}>Kurse</a>
           <a href="#ueber-uns">Über uns</a>
           <a href="#preise">Preise</a>
         </nav>
@@ -98,7 +98,7 @@ export default function LandingPage() {
           <button className="dl-btn-primary" onClick={() => navigate("/register")}>
             Jetzt starten
           </button>
-          <button className="dl-btn-ghost" onClick={() => navigate("/kurse")}>
+          <button className="dl-btn-ghost" onClick={() => navigate("/kurse-entdecken")}>
             Kurse ansehen
           </button>
         </div>
