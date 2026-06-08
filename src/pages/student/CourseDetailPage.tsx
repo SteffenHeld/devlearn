@@ -6,6 +6,11 @@ import { useThemeToggle } from "../../context/ThemeContext";
 import { useProgress } from "../../hooks/useProgress";
 import type { Course, Module, CourseProgress } from "../../types";
 
+// Module mit geladenen Lektions-IDs — nur IDs nötig für Fortschrittsberechnung
+interface ModuleWithLessonIds extends Module {
+  lessonIds: string[];
+}
+
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -52,43 +57,57 @@ export default function CourseDetailPage() {
   const { progress } = useProgress();
 
   const [course, setCourse] = useState<Course | null>(null);
-  const [modules, setModules] = useState<Module[]>([]);
+  const [modules, setModules] = useState<ModuleWithLessonIds[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!kursId) return;
 
     async function fetchData(): Promise<void> {
+      // Kurs laden
       const courseSnap = await getDoc(doc(db, "courses", kursId!));
       if (courseSnap.exists()) {
         setCourse({ id: courseSnap.id, ...(courseSnap.data() as Omit<Course, "id">) });
       }
+
+      // Module laden
       const modulesQuery = query(
         collection(db, "courses", kursId!, "modules"),
         orderBy("order")
       );
       const modulesSnap = await getDocs(modulesQuery);
-      setModules(
-        modulesSnap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<Module, "id">),
-        }))
+
+      // Für jedes Modul auch die Lektions-IDs laden
+      // — nötig um Modul-Abschluss aus completedLessons zu berechnen
+      const modulesWithIds: ModuleWithLessonIds[] = await Promise.all(
+        modulesSnap.docs.map(async (d) => {
+          const lessonsSnap = await getDocs(
+            collection(db, "courses", kursId!, "modules", d.id, "lessons")
+          );
+          return {
+            id: d.id,
+            ...(d.data() as Omit<Module, "id">),
+            lessonIds: lessonsSnap.docs.map((l) => l.id),
+          };
+        })
       );
+
+      setModules(modulesWithIds);
       setLoading(false);
     }
 
     fetchData();
   }, [kursId]);
 
-  // Progress-Daten sauber typisiert — kein any mehr nötig
-  const p: CourseProgress | undefined = progress?.[kursId ?? ""];
-  const completedModuleIds: string[] = p?.completedModules ?? [];
-  const totalLessons = modules.reduce((sum, m) => sum + (m.lessonCount ?? 0), 0);
-  const doneLessons = p?.completed ?? 0;
+  // Progress-Daten aus useProgress — reaktiv über Echtzeit-Listener
+  const p: CourseProgress | undefined = progress[kursId ?? ""];
+  const completedLessons: string[] = p?.completedLessons ?? [];
+
+  const totalLessons = modules.reduce((sum, m) => sum + m.lessonIds.length, 0);
+  const doneLessons  = completedLessons.length;
   const pct = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
 
-  // category ist in Course als optional definiert — kein any-Cast nötig
-  const cat = course?.category ?? "HTML/CSS/JS";
+  const cat     = course?.category ?? "HTML/CSS/JS";
   const variant = bannerColor[cat] ?? "--violet";
 
   if (loading) {
@@ -150,7 +169,6 @@ export default function CourseDetailPage() {
           </div>
         </nav>
 
-        {/* Module in Sidebar */}
         {modules.length > 0 && (
           <>
             <p className="dl-sidebar-section" style={{ marginTop: 16 }}>Module</p>
@@ -254,11 +272,11 @@ export default function CourseDetailPage() {
             ) : (
               <div className="dl-module-list">
                 {modules.map((mod, i) => {
-                  const isDone = completedModuleIds.includes(mod.id);
-                  const modLessons = mod.lessonCount ?? 0;
-                  // Sauber typisiert über CourseProgress.modules
-                  const modDone = p?.modules?.[mod.id] ?? 0;
-                  const modPct = modLessons > 0 ? Math.round((modDone / modLessons) * 100) : 0;
+                  const modLessons   = mod.lessonIds.length;
+                  const modDone      = mod.lessonIds.filter((id) => completedLessons.includes(id)).length;
+                  const modPct       = modLessons > 0 ? Math.round((modDone / modLessons) * 100) : 0;
+                  // Modul gilt als abgeschlossen wenn alle Lektionen in completedLessons sind
+                  const isDone       = modLessons > 0 && modDone === modLessons;
 
                   return (
                     <div
