@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebase";
-import { useThemeToggle } from "../context/ThemeContext";
-import { useAuth } from "../hooks/useAuth";
-import useCourses from "../hooks/useCourses";
-import "../devlearn.css";
+import { auth } from "../../firebase/firebase";
+import { useThemeToggle } from "../../context/ThemeContext";
+import { useAuth } from "../../hooks/useAuth";
+import useCourses from "../../hooks/useCourses";
 
 /* ── Icons ────────────────────────────────────────────────────── */
 const IconDashboard = () => (

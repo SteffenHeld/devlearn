@@ -764,7 +764,7 @@ body {
     border-radius: var(--dl-radius-xl);
     padding: 36px 40px;
     width: 100%;
-    max-width: 440px;
+    max-width: 520px;
     transition: background 0.3s, border-color 0.3s;
 }
 
@@ -1190,11 +1190,16 @@ body {
         grid-template-columns: repeat(2, 1fr);
     }
 
+    .dl-contact-grid {
+        grid-template-columns: 1fr !important;
+    }
+
     .dl-courses-grid {
         grid-template-columns: 1fr;
     }
 
     .dl-form-card {
+        max-width: 100%;
         padding: 28px 24px;
     }
 }

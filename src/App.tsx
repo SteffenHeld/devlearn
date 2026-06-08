@@ -4,23 +4,26 @@ import { useAuth } from "./context/AuthContext";
 import { Role } from "./types";
 
 // ─── Seiten ───────────────────────────────────────────────────────────────────
-import LandingPage            from "./pages/LandingPage";
-import LoginPage              from "./pages/LoginPage";
-import RegisterPage           from "./pages/RegisterPage";
-import ContactPage            from "./pages/ContactPage";
-import PublicCoursesPage      from "./pages/PublicCoursesPage";
-import NotFoundPage           from "./pages/NotFoundPage";
+import LandingPage            from "./pages/public/LandingPage";
+import UeberUns               from "./pages/public/UeberUns";
+import Preise                 from "./pages/public/Preise";
+import ContactPage            from "./pages/public/ContactPage";
+import PublicCoursesPage      from "./pages/public/PublicCoursesPage";
+import NotFoundPage from "./pages/public/NotFoundPage";
 
-import StudentDashboard       from "./pages/StudentDashboard";
-import CoursesPage            from "./pages/CoursesPage";
-import CourseDetailPage       from "./pages/CourseDetailPage";
-import ModuleDetailPage       from "./pages/ModuleDetailPage";
-import LessonPage             from "./pages/LessonPage";
+import LoginPage              from "./pages/auth/LoginPage";
+import RegisterPage           from "./pages/auth/RegisterPage";
 
-import TeacherDashboard       from "./pages/TeacherDashboard";
-import TeacherCoursesPage     from "./pages/TeacherCoursesPage";
-import TeacherCourseDetailPage from "./pages/TeacherCourseDetailPage";
-import TeacherModuleDetailPage from "./pages/TeacherModuleDetailPage";
+import StudentDashboard       from "./pages/student/StudentDashboard";
+import CoursesPage            from "./pages/student/CoursesPage";
+import CourseDetailPage       from "./pages/student/CourseDetailPage";
+import ModuleDetailPage       from "./pages/student/ModuleDetailPage";
+import LessonPage             from "./pages/student/LessonPage";
+
+import TeacherDashboard       from "./pages/teacher/TeacherDashboard";
+import TeacherCoursesPage     from "./pages/teacher/TeacherCoursesPage";
+import TeacherCourseDetailPage from "./pages/teacher/TeacherCourseDetailPage";
+import TeacherModuleDetailPage from "./pages/teacher/TeacherModuleDetailPage";
 
 // ─── Protected Route ──────────────────────────────────────────────────────────
 
@@ -61,7 +64,9 @@ export default function App() {
       <Routes>
 
         {/* ── Öffentlich ──────────────────────────────────────── */}
-        <Route path="/"          element={<LandingPage />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/ueber-uns" element={<UeberUns />} />
+        <Route path="/preise" element={<Preise />} /> 
         <Route path="/login"     element={<LoginPage />} />
         <Route path="/register"  element={<RegisterPage />} />
         <Route path="/contact"   element={<ContactPage />} />

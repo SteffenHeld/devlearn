@@ -1,0 +1,130 @@
+/* ── Über uns – Hauptlayout ─────────────────────────────── */
+.ue-main {
+    position: relative;
+    z-index: 10;
+    padding: 60px 48px 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ── Hero ───────────────────────────────────────────────── */
+.ue-hero {
+    margin-bottom: 64px;
+    max-width: 520px;
+}
+
+/* ── Karten-Grid ────────────────────────────────────────── */
+.ue-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 64px;
+}
+
+.ue-card {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 16px;
+    padding: 28px;
+    transition: background 0.3s, border-color 0.3s, transform 0.2s;
+}
+
+.ue-card:hover {
+    transform: translateY(-2px);
+}
+
+.dl-dark .ue-card {
+    background: rgba(26, 24, 48, 0.85);
+    border-color: #2e2b50;
+}
+
+.ue-card-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.ue-card-icon--purple {
+    background: rgba(127, 119, 221, 0.15);
+    color: #7F77DD;
+}
+
+.ue-card-icon--teal {
+    background: rgba(29, 158, 117, 0.12);
+    color: #1D9E75;
+}
+
+.ue-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+    transition: color 0.3s;
+}
+
+.dl-dark .ue-card-title {
+    color: #f0effe;
+}
+
+.ue-card-text {
+    font-size: 14px;
+    color: #4a4a6a;
+    line-height: 1.7;
+    transition: color 0.3s;
+}
+
+.dl-dark .ue-card-text {
+    color: #8884aa;
+}
+
+/* ── Aktiver Nav-Link ───────────────────────────────────── */
+.dl-nav-active {
+    background: rgba(127, 119, 221, 0.12);
+    color: #534AB7 !important;
+    font-weight: 500;
+}
+
+.dl-dark .dl-nav-active {
+    background: rgba(127, 119, 221, 0.15);
+    color: #c4bff5 !important;
+}
+
+/* ── CTA ────────────────────────────────────────────────── */
+.ue-cta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.ue-cta-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    transition: color 0.3s;
+}
+
+.dl-dark .ue-cta-text {
+    color: #f0effe;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .ue-main {
+        padding: 40px 24px 60px;
+    }
+
+    .ue-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .ue-cta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

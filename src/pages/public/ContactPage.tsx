@@ -1,7 +1,7 @@
-import { useState, FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { useThemeToggle } from "../context/ThemeContext";
-import "../devlearn.css";
+import { useThemeToggle } from "../../context/ThemeContext";
+import "../../styles/contact.css"
 
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -49,56 +49,46 @@ export default function ContactPage() {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    // Hier könnte ein echtes E-Mail-Service (z.B. EmailJS / Firestore) aufgerufen werden
     await new Promise((r) => setTimeout(r, 800));
     setSent(true);
     setLoading(false);
   };
 
   return (
-    <div className={`dl-auth-page${darkMode ? " dl-dark" : ""}`} style={{ alignItems: "flex-start", paddingTop: 0 }}>
+    <div className={`dl-contact-page${darkMode ? " dl-dark" : ""}`}>
 
       {/* Hintergrund */}
       <svg className="dl-auth-bg" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
         <polygon points="0,0 1440,0 720,900 0,900" style={{ fill: "#c8c4f8", opacity: 0.3 }} />
-        <polygon points="720,900 1440,900 1440,200"  style={{ fill: "#b8eed8", opacity: 0.3 }} />
-        <circle cx="160"  cy="160" r="280" style={{ fill: "none", stroke: "#a8a4e8", strokeWidth: 0.8, opacity: 0.35 }} />
+        <polygon points="720,900 1440,900 1440,200" style={{ fill: "#b8eed8", opacity: 0.3 }} />
+        <circle cx="160" cy="160" r="280" style={{ fill: "none", stroke: "#a8a4e8", strokeWidth: 0.8, opacity: 0.35 }} />
         <circle cx="1300" cy="740" r="220" style={{ fill: "none", stroke: "#5dbca0", strokeWidth: 0.8, opacity: 0.3 }} />
       </svg>
 
       {/* Top-Bar */}
-      <div style={{
-        position: "relative", zIndex: 10, width: "100%",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "24px 48px",
-      }}>
+      <header className="dl-contact-topbar">
         <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/")}>
           <IconBack /> Zurück
         </button>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <span style={{ fontSize: 18, fontWeight: 600, color: "var(--dl-text-primary)", letterSpacing: "-0.3px" }}>
-            Dev<span style={{ color: "var(--dl-violet-400)" }}>Learn</span>
+        <div className="dl-contact-topbar-right">
+          <span className="dl-contact-logo">
+            Dev<span>Learn</span>
           </span>
           <button className="dl-theme-toggle" onClick={toggleTheme} aria-label={darkMode ? "Light Mode" : "Dark Mode"}>
             {darkMode ? <IconSun /> : <IconMoon />}
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Content */}
-      <div className="dl-auth-content" style={{ paddingTop: 20 }}>
+      {/* Zentrierter Content */}
+      <main className="dl-contact-main">
 
-        {/* Icon + Titel */}
-        <div style={{
-          width: 56, height: 56, borderRadius: "var(--dl-radius-md)",
-          background: "var(--dl-violet-50)", display: "flex", alignItems: "center",
-          justifyContent: "center", marginBottom: 20, color: "var(--dl-violet-600)",
-        }}>
+        {/* Mail-Icon */}
+        <div className="dl-contact-icon">
           <IconMail />
         </div>
 
         {sent ? (
-          /* ── Erfolgs-State ─────────────────────────────────── */
           <div className="dl-form-card" style={{ textAlign: "center" }}>
             <div style={{ fontSize: 44, marginBottom: 16 }}>✅</div>
             <h1 className="dl-form-title" style={{ textAlign: "center" }}>Nachricht gesendet!</h1>
@@ -110,13 +100,12 @@ export default function ContactPage() {
             </button>
           </div>
         ) : (
-          /* ── Formular ──────────────────────────────────────── */
           <div className="dl-form-card">
             <h1 className="dl-form-title">Kontakt aufnehmen</h1>
             <p className="dl-form-sub">Wir helfen dir gerne weiter — schreib uns einfach.</p>
 
             <form onSubmit={handleSubmit} noValidate>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
+              <div className="dl-contact-grid">
                 <div className="dl-field">
                   <label htmlFor="contact-name">Name</label>
                   <input
@@ -170,17 +159,11 @@ export default function ContactPage() {
                 style={{ width: "100%", justifyContent: "center", padding: "12px", marginTop: 4 }}
                 disabled={loading}
               >
-                {loading ? "Wird gesendet…" : (
-                  <><IconSend /> Nachricht senden</>
-                )}
+                {loading ? "Wird gesendet…" : <><IconSend /> Nachricht senden</>}
               </button>
             </form>
 
-            <div style={{
-              marginTop: 24, paddingTop: 20,
-              borderTop: "1px solid var(--dl-border)",
-              display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap",
-            }}>
+            <div className="dl-contact-footer">
               {[
                 { icon: "📧", label: "E-Mail", value: "kontakt@devlearn.de" },
                 { icon: "📍", label: "Standort", value: "Deutschland" },
@@ -194,7 +177,7 @@ export default function ContactPage() {
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useThemeToggle } from "../context/ThemeContext";
-import useCourses from "../hooks/useCourses";
-import { useProgress } from "../hooks/useProgress";
-import { useAuth } from "../hooks/useAuth";
-import "../devlearn.css";
+import { useThemeToggle } from "../../context/ThemeContext";
+import useCourses from "../../hooks/useCourses";
+import { useProgress } from "../../hooks/useProgress";
+import { useAuth } from "../../hooks/useAuth";
 
 /* ── Icons ────────────────────────────────────────────────────── */
 const IconSearch = () => (

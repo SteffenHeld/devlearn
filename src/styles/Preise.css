@@ -1,0 +1,240 @@
+/* ── Preise – Hauptlayout ───────────────────────────────── */
+.pr-main {
+    position: relative;
+    z-index: 10;
+    padding: 60px 48px 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* ── Hero ───────────────────────────────────────────────── */
+.pr-hero {
+    margin-bottom: 56px;
+    max-width: 520px;
+}
+
+/* ── Karten-Grid ────────────────────────────────────────── */
+.pr-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: start;
+    margin-bottom: 32px;
+}
+
+/* ── Basis-Karte ────────────────────────────────────────── */
+.pr-card {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    transition: background 0.3s, border-color 0.3s, transform 0.2s;
+}
+
+.pr-card:hover {
+    transform: translateY(-2px);
+}
+
+.dl-dark .pr-card {
+    background: rgba(26, 24, 48, 0.85);
+    border-color: #2e2b50;
+}
+
+/* ── Featured-Karte ─────────────────────────────────────── */
+.pr-card--featured {
+    background: #7F77DD;
+    border-color: #6a62c4;
+    transform: translateY(-8px);
+}
+
+.pr-card--featured:hover {
+    transform: translateY(-10px);
+}
+
+.dl-dark .pr-card--featured {
+    background: #6a62c4;
+    border-color: #534AB7;
+}
+
+.pr-featured-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1D9E75;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+/* ── Karten-Header ──────────────────────────────────────── */
+.pr-card-header {
+    margin-bottom: 24px;
+}
+
+.pr-plan-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #7F77DD;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.pr-plan-label--white {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.pr-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.pr-price-amount {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
+    transition: color 0.3s;
+}
+
+.dl-dark .pr-price-amount {
+    color: #f0effe;
+}
+
+.pr-price-amount--white {
+    color: #fff !important;
+}
+
+.pr-price-period {
+    font-size: 14px;
+    color: #7878a0;
+    transition: color 0.3s;
+}
+
+.dl-dark .pr-price-period {
+    color: #8884aa;
+}
+
+.pr-price-period--white {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.pr-plan-desc {
+    font-size: 13px;
+    color: #4a4a6a;
+    transition: color 0.3s;
+}
+
+.dl-dark .pr-plan-desc {
+    color: #8884aa;
+}
+
+.pr-plan-desc--white {
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* ── Feature-Liste ──────────────────────────────────────── */
+.pr-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pr-features li {
+    font-size: 13px;
+    color: #4a4a6a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.3s;
+}
+
+.dl-dark .pr-features li {
+    color: #8884aa;
+}
+
+.pr-features--white li {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.pr-check {
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.pr-check--on {
+    color: #1D9E75;
+}
+
+.pr-check--off {
+    color: #b0aed0;
+}
+
+.pr-features--white .pr-check--on {
+    color: #a8f0d8;
+}
+
+/* ── Button ─────────────────────────────────────────────── */
+.pr-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* ── Hinweis ────────────────────────────────────────────── */
+.pr-hint {
+    font-size: 12px;
+    color: #9090b0;
+    text-align: center;
+    transition: color 0.3s;
+}
+
+.dl-dark .pr-hint {
+    color: #5550a0;
+}
+
+/* ── Aktiver Nav-Link ───────────────────────────────────── */
+.dl-nav-active {
+    background: rgba(127, 119, 221, 0.12);
+    color: #534AB7 !important;
+    font-weight: 500;
+}
+
+.dl-dark .dl-nav-active {
+    background: rgba(127, 119, 221, 0.15);
+    color: #c4bff5 !important;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .pr-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .pr-card--featured {
+        transform: none;
+    }
+
+    .pr-card--featured:hover {
+        transform: translateY(-2px);
+    }
+}
+
+@media (max-width: 768px) {
+    .pr-main {
+        padding: 40px 24px 60px;
+    }
+}

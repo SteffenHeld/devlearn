@@ -1,9 +1,9 @@
-import { useState, FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase/firebase";
-import { useThemeToggle } from "../context/ThemeContext";
-import "../LandingPage.css";
+import { auth } from "../../firebase/firebase";
+import { useThemeToggle } from "../../context/ThemeContext";
+import "../../styles/LandingPage.css";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -15,19 +15,19 @@ export default function LandingPage() {
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
-  e.preventDefault();
-  setError("");
-  setLoading(true);
-  try {
-    await signInWithEmailAndPassword(auth, email, password);
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    navigate("/dashboard");
-  } catch {
-    setError("E-Mail oder Passwort falsch.");
-  } finally {
-    setLoading(false);
-  }
-};
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      navigate("/dashboard");
+    } catch {
+      setError("E-Mail oder Passwort falsch.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={`dl-landing${darkMode ? " dl-dark" : ""}`}>
@@ -51,11 +51,9 @@ export default function LandingPage() {
       <header className="dl-header">
         <div className="dl-logo">Dev<span>Learn</span></div>
         <nav className="dl-nav">
-          <a onClick={() => navigate("/kurse-entdecken")} style={{ cursor: "pointer" }}>Kurse</a>
-          <a href="#ueber-uns">Über uns</a>
-          <a href="#preise">Preise</a>
+          <a onClick={() => navigate("/ueber-uns")} style={{cursor: "pointer"}}>Über uns</a>
+          <a onClick={() => navigate("/Preise")} style={{ cursor: "pointer" }}>Preise</a>
         </nav>
-
         <button
           className="dl-theme-toggle"
           onClick={toggleTheme}
@@ -78,11 +76,7 @@ export default function LandingPage() {
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
           )}
-        </button>
-
-        <button className="dl-register-btn" onClick={() => navigate("/register")}>
-          Registrieren
-        </button>
+          </button>
       </header>
 
       {/* ── Hero ─────────────────────────────────────────────── */}
@@ -119,7 +113,6 @@ export default function LandingPage() {
 
       {/* ── Login-Zone ──────────────────────────────────────── */}
       <div className="dl-login-zone">
-        <p className="dl-zone-label dl-zone-label--teal">Bereits registriert?</p>
         <div className="dl-login-card">
           <h2 className="dl-login-title">Anmelden</h2>
           <form onSubmit={handleLogin} noValidate>

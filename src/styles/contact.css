@@ -1,0 +1,101 @@
+/* ── Kontaktseite Wrapper ───────────────────────────────── */
+.dl-contact-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--dl-bg);
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── Top-Bar ────────────────────────────────────────────── */
+.dl-contact-topbar {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 48px;
+    width: 100%;
+}
+
+.dl-contact-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.dl-contact-logo {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dl-text-primary);
+    letter-spacing: -0.3px;
+}
+
+.dl-contact-logo span {
+    color: var(--dl-violet-400);
+}
+
+/* ── Zentrierter Inhalt ─────────────────────────────────── */
+.dl-contact-main {
+    position: relative;
+    z-index: 10;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 24px 60px;
+}
+
+/* ── Mail-Icon ──────────────────────────────────────────── */
+.dl-contact-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--dl-radius-md);
+    background: var(--dl-violet-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: var(--dl-violet-600);
+}
+
+.dl-dark .dl-contact-icon {
+    background: rgba(127, 119, 221, 0.15);
+    color: var(--dl-violet-200);
+}
+
+/* ── Kontakt-Grid ───────────────────────────────────────── */
+.dl-contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 16px;
+}
+
+/* ── Footer-Zeile im Formular ───────────────────────────── */
+.dl-contact-footer {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--dl-border);
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .dl-contact-topbar {
+        padding: 20px 24px;
+    }
+
+    .dl-contact-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dl-form-card {
+        max-width: 100%;
+        padding: 24px 20px;
+    }
+}

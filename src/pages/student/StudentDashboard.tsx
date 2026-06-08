@@ -1,11 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebase";
-import { useThemeToggle } from "../context/ThemeContext";
-import { useAuth } from "../hooks/useAuth";
-import useCourses from "../hooks/useCourses";
-import { useProgress } from "../hooks/useProgress";
-import "../devlearn.css";
+import { auth } from "../../firebase/firebase";
+import { useThemeToggle } from "../../context/ThemeContext";
+import { useAuth } from "../../hooks/useAuth";
+import useCourses from "../../hooks/useCourses";
+import { useProgress } from "../../hooks/useProgress";
 
 /* ── Sidebar-Icons ────────────────────────────────────────────── */
 const IconDashboard = () => (

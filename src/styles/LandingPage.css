@@ -202,7 +202,7 @@
     display: flex;
     align-items: center;
     padding: 28px 48px;
-    gap: 8px;
+    gap: 16px;
 }
 
 .dl-logo {
@@ -221,7 +221,6 @@
 .dl-nav {
     display: flex;
     gap: 4px;
-    flex: 1;
 }
 
 .dl-nav a {
@@ -251,7 +250,8 @@
     cursor: pointer;
     color: #534AB7;
     transition: background 0.15s, border-color 0.15s, color 0.15s;
-    margin-right: 8px;
+    margin-right: 0;
+    margin-left: auto;
 }
 
 .dl-theme-toggle:hover {
@@ -401,11 +401,12 @@
     border-color: #7F77DD;
 }
 
-/* ── Login-Zone (unten-rechts) ───────────────────────────── */
+/* Login-Zone */
 .dl-login-zone {
     position: absolute;
-    bottom: 60px;
-    right: 56px;
+    top: 50%;
+    transform: translateY(-60%);;
+    right: 60px;
     z-index: 10;
     text-align: right;
 }
@@ -415,8 +416,8 @@
     backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.6);
     border-radius: 16px;
-    padding: 28px 28px 24px;
-    width: 280px;
+    padding: 32px 24px 28px;
+    width: 260px;
     text-align: left;
     transition: background 0.3s, border-color 0.3s;
 }
@@ -528,17 +529,23 @@
 @media (max-width: 768px) {
     .dl-header {
         padding: 20px 24px;
-        flex-wrap: wrap;
+        flex-wrap: nowrap;
         gap: 12px;
+    }
+    .dl-theme-toggle {
+        margin-left: 0;
     }
 
     .dl-nav {
-        order: 3;
-        flex-basis: 100%;
+        order: 0;
+        flex-basis: auto;
+        flex: 1;
     }
-
+    
     .dl-hero {
         padding: 48px 24px 32px;
+        margin-left: 0;
+        max-width: 100%;
     }
 
     .dl-contact-zone {
@@ -548,11 +555,27 @@
 
     .dl-login-zone {
         position: static;
+        transform: translateY(0);
         padding: 0 24px 40px;
         text-align: left;
     }
 
     .dl-login-card {
         width: 100%;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .dl-hero {
+        max-width:380px;
+        margin-left: 32px;
+    }
+
+    dl.dl-login-zone {
+        right:24px;
+    }
+
+    .dl-login-card {
+        width: 240px;
     }
 }

@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useThemeToggle } from "../context/ThemeContext";
-import useCourses from "../hooks/useCourses";
-import "../devlearn.css";
+import { useThemeToggle } from "../../context/ThemeContext";
+import useCourses from "../../hooks/useCourses";
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

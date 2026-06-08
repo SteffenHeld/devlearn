@@ -3,11 +3,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   doc, getDoc, collection, getDocs, orderBy, query
 } from "firebase/firestore";
-import { db } from "../firebase/firebase";
-import { Module, Lesson } from "../types";
-import { useThemeToggle } from "../context/ThemeContext";
-import { useAuth } from "../context/AuthContext";
-import "../devlearn.css";
+import { db } from "../../firebase/firebase";
+import { Module, Lesson } from "../../types";
+import { useThemeToggle } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
 
 /* ── Icons ────────────────────────────────────────────────────── */
 const IconBack = () => (

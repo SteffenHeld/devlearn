@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
-import { db } from "../firebase/firebase";
-import { useAuth } from "../context/AuthContext";
-import { Lesson } from "../types";
-import { useThemeToggle } from "../context/ThemeContext";
-import "../devlearn.css";
+import { db } from "../../firebase/firebase";
+import { useAuth } from "../../context/AuthContext";
+import { Lesson } from "../../types";
+import { useThemeToggle } from "../../context/ThemeContext";
 
 /* ── Icons ────────────────────────────────────────────────────── */
 const IconBack = () => (

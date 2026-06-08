@@ -1,6 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useThemeToggle } from "../context/ThemeContext";
-import "../devlearn.css";
+import { useThemeToggle } from "../../context/ThemeContext";
 
 export default function NotFoundPage() {
   const navigate = useNavigate();
