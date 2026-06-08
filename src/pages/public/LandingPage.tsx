@@ -4,6 +4,8 @@ import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/aut
 import { auth } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
 import "../../styles/LandingPage.css";
+import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -69,7 +71,7 @@ export default function LandingPage() {
 
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <header className="dl-header">
-        <div className="dl-logo">Dev<span>Learn</span></div>
+        <DevLearnLogo />
         <nav className="dl-nav">
           <Link to="/ueber-uns">Über uns</Link>
           <Link to="/preise">Preise</Link>

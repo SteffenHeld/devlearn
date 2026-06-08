@@ -6,6 +6,8 @@ import { useThemeToggle } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
 import useCourses from "../../hooks/useCourses";
 import type { Course } from "../../types";
+import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconDashboard = () => (
@@ -70,7 +72,7 @@ type Tab = "courses" | "students";
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   // Korrekter Import aus context/AuthContext
   const { user } = useAuth();
@@ -128,7 +130,7 @@ export default function TeacherDashboard() {
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
-        <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
+        <DevLearnLogo />
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link active" aria-current="page">

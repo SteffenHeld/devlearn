@@ -6,6 +6,9 @@ import { useAuth } from "../../context/AuthContext";
 import useCourses from "../../hooks/useCourses";
 import { useProgress } from "../../hooks/useProgress";
 import type { CourseProgress } from "../../types";
+import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
+import CourseCard from "../../components/ui/CourseCard";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconDashboard = () => (
@@ -30,11 +33,6 @@ const IconLogout = () => (
     <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
   </svg>
 );
-const IconCheck = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-);
 const IconSun = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="12" cy="12" r="5"/>
@@ -50,16 +48,10 @@ const IconMoon = () => (
   </svg>
 );
 
-const bannerColor: Record<string, string> = {
-  "HTML/CSS/JS": "--violet", "React/Vite/TS": "--teal", "Figma": "--amber", "Framer": "--coral",
-};
-const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
-};
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { user } = useAuth();
   const { courses } = useCourses();
@@ -104,7 +96,7 @@ export default function StudentDashboard() {
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
-        <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
+        <DevLearnLogo />
 
         <p className="dl-sidebar-section">Menü</p>
         <nav className="dl-sidebar-nav">
@@ -195,54 +187,13 @@ export default function StudentDashboard() {
               </div>
             ) : (
               <div className="dl-courses-grid">
-                {courses.map((course) => {
-                  const p: CourseProgress | undefined = progress[course.id];
-                  const total = course.lessonCount ?? 0;
-                  const done = p?.completed ?? 0;
-                  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-                  const cat = course.category ?? "HTML/CSS/JS";
-                  const variant = bannerColor[cat] ?? "--violet";
-                  const isComplete = pct === 100;
-
-                  return (
-                    <div
-                      key={course.id}
-                      className="dl-course-card"
-                      // Korrekter deutscher URL-Pfad
-                      onClick={() => navigate(`/kurse/${course.id}`)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => e.key === "Enter" && navigate(`/kurse/${course.id}`)}
-                      aria-label={`Kurs: ${course.title}`}
-                    >
-                      <div className={`dl-course-banner dl-course-banner${variant}`}>
-                        <span className="dl-course-icon">{bannerEmoji[cat] ?? "📖"}</span>
-                        {isComplete && (
-                          <span className="dl-badge dl-badge--teal" style={{ marginLeft: "auto" }}>
-                            <IconCheck /> Fertig
-                          </span>
-                        )}
-                      </div>
-                      <div className="dl-course-body">
-                        <p className="dl-course-title">{course.title}</p>
-                        <p className="dl-course-meta">
-                          {course.moduleCount ?? 0} Module · {total} Lektionen
-                        </p>
-                        <div className="dl-progress">
-                          <div
-                            className={`dl-progress-fill dl-progress-fill${isComplete ? "--teal" : "--violet"}`}
-                            style={{ width: `${pct}%` }}
-                            role="progressbar"
-                            aria-valuenow={pct}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                          />
-                        </div>
-                        <p className="dl-progress-label">{pct}% abgeschlossen</p>
-                      </div>
-                    </div>
-                  );
-                })}
+                {courses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  progress={progress[course.id]}
+                />
+              ))}
               </div>
             )}
           </div>

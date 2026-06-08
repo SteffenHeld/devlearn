@@ -6,6 +6,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useProgress } from "../../hooks/useProgress";
 import { useThemeToggle } from "../../context/ThemeContext";
 import type { Lesson } from "../../types";
+import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
@@ -52,7 +54,7 @@ export default function LessonPage() {
   }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
 
   // markLessonComplete aus useProgress — schreibt korrekt nach users/{uid}/progress/{courseId}
@@ -111,7 +113,7 @@ export default function LessonPage() {
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
-        <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
+        <DevLearnLogo />
         <p className="dl-sidebar-section">Navigation</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>

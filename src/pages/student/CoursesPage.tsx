@@ -4,17 +4,15 @@ import { useThemeToggle } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
 import useCourses from "../../hooks/useCourses";
 import { useProgress } from "../../hooks/useProgress";
-import type { CourseProgress } from "../../types";
+import type { Course, CourseProgress } from "../../types";
+import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
+import CourseCard from "../../components/ui/CourseCard";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconSearch = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-  </svg>
-);
-const IconArrow = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
   </svg>
 );
 const IconBack = () => (
@@ -38,16 +36,10 @@ const IconMoon = () => (
 );
 
 const CATEGORIES = ["Alle", "HTML/CSS/JS", "React/Vite/TS", "Figma", "Framer"];
-const bannerColor: Record<string, string> = {
-  "HTML/CSS/JS": "--violet", "React/Vite/TS": "--teal", "Figma": "--amber", "Framer": "--coral",
-};
-const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
-};
 
 export default function CoursesPage() {
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { courses, loading, error } = useCourses();
   const { progress } = useProgress();
@@ -68,7 +60,7 @@ export default function CoursesPage() {
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
-        <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
+        <DevLearnLogo />
         <p className="dl-sidebar-section">Menü</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>
@@ -177,59 +169,13 @@ export default function CoursesPage() {
 
           {!loading && filtered.length > 0 && (
             <div className="dl-courses-grid">
-              {filtered.map((course) => {
-                const p: CourseProgress | undefined = progress?.[course.id];
-                const total = course.lessonCount ?? 0;
-                const done = p?.completed ?? 0;
-                const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-                const cat = course.category ?? "HTML/CSS/JS";
-                const variant = bannerColor[cat] ?? "--violet";
-                const started = done > 0;
-                const isComplete = pct === 100;
-
-                return (
-                  <div
-                    key={course.id}
-                    className="dl-course-card"
-                    onClick={() => navigate(`/kurse/${course.id}`)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && navigate(`/kurse/${course.id}`)}
-                    aria-label={`Kurs: ${course.title}`}
-                  >
-                    <div className={`dl-course-banner dl-course-banner${variant}`}>
-                      <span className="dl-course-icon">{bannerEmoji[cat] ?? "📖"}</span>
-                      {isComplete && <span className="dl-badge dl-badge--teal" style={{ marginLeft: "auto" }}>Fertig ✔</span>}
-                      {!isComplete && started && <span className="dl-badge dl-badge--violet" style={{ marginLeft: "auto" }}>In Arbeit</span>}
-                    </div>
-                    <div className="dl-course-body">
-                      <p className="dl-course-title">{course.title}</p>
-                      <p className="dl-course-meta">
-                        {course.description
-                          ? course.description.slice(0, 60) + (course.description.length > 60 ? "…" : "")
-                          : `${course.moduleCount ?? 0} Module · ${total} Lektionen`
-                        }
-                      </p>
-                      <div className="dl-progress">
-                        <div
-                          className={`dl-progress-fill dl-progress-fill${isComplete ? "--teal" : "--violet"}`}
-                          style={{ width: `${pct}%` }}
-                          role="progressbar"
-                          aria-valuenow={pct}
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                        />
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
-                        <p className="dl-progress-label">{pct}% abgeschlossen</p>
-                        <span style={{ fontSize: 13, color: "var(--dl-violet-400)", fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}>
-                          {started ? "Weiter" : "Starten"} <IconArrow />
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              {filtered.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                progress={progress[course.id]}
+              />
+            ))}
             </div>
           )}
         </div>

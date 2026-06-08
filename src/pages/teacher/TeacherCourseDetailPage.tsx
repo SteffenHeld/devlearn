@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
 import type { Course, Module } from "../../types";
+import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -47,7 +49,7 @@ const bannerEmoji: Record<string, string> = {
 export default function TeacherCourseDetailPage() {
   const { kursId } = useParams<{ kursId: string }>();
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { courses, addModule, updateCourse } = useCourses();
 
@@ -112,7 +114,7 @@ export default function TeacherCourseDetailPage() {
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
-        <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
+        <DevLearnLogo />
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>

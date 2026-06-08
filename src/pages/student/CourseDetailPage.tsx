@@ -5,6 +5,8 @@ import { db } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
 import { useProgress } from "../../hooks/useProgress";
 import type { Course, Module, CourseProgress } from "../../types";
+import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 // Module mit geladenen Lektions-IDs — nur IDs nötig für Fortschrittsberechnung
 interface ModuleWithLessonIds extends Module {
@@ -52,7 +54,7 @@ const bannerEmoji: Record<string, string> = {
 export default function CourseDetailPage() {
   const { kursId } = useParams<{ kursId: string }>();
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { progress } = useProgress();
 
@@ -147,7 +149,7 @@ export default function CourseDetailPage() {
 
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
-        <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
+        <DevLearnLogo />
         <p className="dl-sidebar-section">Navigation</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>

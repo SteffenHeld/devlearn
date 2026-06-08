@@ -4,6 +4,8 @@ import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
+import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -74,7 +76,7 @@ export default function RegisterPage() {
       <div className="dl-auth-content">
 
         {/* Logo */}
-        <Link to="/" className="dl-auth-logo">Dev<span>Learn</span></Link>
+        <DevLearnLogo linkTo="/" className="dl-auth-logo" />
 
         {/* Card */}
         <div className="dl-form-card">

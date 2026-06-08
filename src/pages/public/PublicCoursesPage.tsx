@@ -3,6 +3,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
 import "../../styles/LandingPage.css";
+import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 const IconSearch = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -53,7 +55,7 @@ export default function PublicCoursesPage() {
 
       {/* Header */}
       <header className="dl-header">
-        <Link to="/" className="dl-logo">Dev<span>Learn</span></Link>
+        <DevLearnLogo linkTo="/" />
         <nav className="dl-nav">
           <Link to="/kurse-entdecken">Kurse</Link>
           <Link to="/ueber-uns">Über uns</Link>
