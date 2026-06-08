@@ -204,8 +204,8 @@ export default function TeacherCoursesPage() {
                           </div>
                         </td>
                         <td><span className="dl-badge dl-badge--violet">{cat}</span></td>
-                        <td style={{ color: "var(--dl-text-muted)" }}>{course.moduleCount ?? 0}</td>
-                        <td style={{ color: "var(--dl-text-muted)" }}>{course.lessonCount ?? 0}</td>
+                        <td style={{ color: "var(--dl-text-muted)" }}>{course.modules?.length ?? 0}</td>
+                        <td style={{ color: "var(--dl-text-muted)" }}>{course.modules?.reduce((s, m) => s + (m.lessons?.length ?? 0), 0) ?? 0}</td>
                         <td>
                           <div style={{ display: "flex", gap: 6 }}>
                             <button

@@ -114,7 +114,14 @@ export default function TeacherDashboard() {
   const initials = (user?.displayName ?? "L")
     .split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
-  const totalLessons = courses.reduce((sum: number, c: Course) => sum + (c.lessonCount ?? 0), 0);
+  // moduleCount/lessonCount können in alten Firestore-Dokumenten fehlen
+  // daher direkt aus den geladenen modules/lessons zählen
+  const totalModules = courses.reduce(
+    (sum, c) => sum + (c.modules?.length ?? 0), 0
+  );
+  const totalLessons = courses.reduce(
+    (sum, c) => sum + (c.modules?.reduce((s, m) => s + (m.lessons?.length ?? 0), 0) ?? 0), 0
+  );
 
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
@@ -178,7 +185,7 @@ export default function TeacherDashboard() {
             <div className="dl-stat">
               <p className="dl-stat-label">Module</p>
               <p className="dl-stat-value">
-                {courses.reduce((s: number, c: Course) => s + (c.moduleCount ?? 0), 0)}
+                {totalModules}
               </p>
             </div>
             <div className="dl-stat">
