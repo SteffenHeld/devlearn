@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
@@ -32,7 +32,7 @@ export default function LandingPage() {
   return (
     <div className={`dl-landing${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── SVG-Hintergrund ─────────────────────────────────── */}
+      {/* ── SVG-Hintergrund ─────────────────────────────────────────────────── */}
       <svg
         className="dl-diag-bg"
         viewBox="0 0 1440 900"
@@ -47,12 +47,12 @@ export default function LandingPage() {
         <circle cx="1320" cy="450" r="260" className="dl-deco-circle dl-deco-circle--right" />
       </svg>
 
-      {/* ── Header / Navigation ──────────────────────────────── */}
+      {/* ── Header / Navigation ─────────────────────────────────────────────── */}
       <header className="dl-header">
         <div className="dl-logo">Dev<span>Learn</span></div>
         <nav className="dl-nav">
-          <a onClick={() => navigate("/ueber-uns")} style={{cursor: "pointer"}}>Über uns</a>
-          <a onClick={() => navigate("/Preise")} style={{ cursor: "pointer" }}>Preise</a>
+          <Link to="/ueber-uns">Über uns</Link>
+          <Link to="/preise">Preise</Link>
         </nav>
         <button
           className="dl-theme-toggle"
@@ -76,17 +76,17 @@ export default function LandingPage() {
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
             </svg>
           )}
-          </button>
+        </button>
       </header>
 
-      {/* ── Hero ─────────────────────────────────────────────── */}
+      {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <main className="dl-hero">
         <span className="dl-hero-tag">Lernplattform für Entwickler</span>
         <h1 className="dl-hero-title">
           Lerne modern.<br />Lerne jetzt.
         </h1>
         <p className="dl-hero-sub">
-          Von HTML bis React — strukturierte Kurse mit
+          Von HTML bis React – strukturierte Kurse mit
           Praxisprojekten und IHK-Zertifizierung.
         </p>
         <div className="dl-hero-btns">
@@ -99,19 +99,19 @@ export default function LandingPage() {
         </div>
       </main>
 
-      {/* ── Kontakt-Zone ────────────────────────────────────── */}
+      {/* ── Kontakt-Zone ────────────────────────────────────────────────────── */}
       <div className="dl-contact-zone">
         <p className="dl-zone-label">Fragen? Meld dich.</p>
-        <a href="/contact" className="dl-contact-link">
+        <Link to="/contact" className="dl-contact-link">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="2" y="4" width="20" height="16" rx="2"/>
             <path d="M2 7l10 7 10-7"/>
           </svg>
           Zum Kontaktformular
-        </a>
+        </Link>
       </div>
 
-      {/* ── Login-Zone ──────────────────────────────────────── */}
+      {/* ── Login-Zone ──────────────────────────────────────────────────────── */}
       <div className="dl-login-zone">
         <div className="dl-login-card">
           <h2 className="dl-login-title">Anmelden</h2>
@@ -147,7 +147,7 @@ export default function LandingPage() {
           </form>
           <p className="dl-register-hint">
             Noch kein Konto?{" "}
-            <span onClick={() => navigate("/register")}>Jetzt registrieren</span>
+            <Link to="/register">Jetzt registrieren</Link>
           </p>
         </div>
       </div>

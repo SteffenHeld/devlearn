@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import "../../styles/LandingPage.css";
 import "../../styles/UeberUns.css";
@@ -11,7 +11,7 @@ export default function UeberUns() {
   return (
     <div className={`dl-landing${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── SVG-Hintergrund ─────────────────────────────────── */}
+      {/* ── SVG-Hintergrund ─────────────────────────────────────────────────── */}
       <svg
         className="dl-diag-bg"
         viewBox="0 0 1440 900"
@@ -26,14 +26,12 @@ export default function UeberUns() {
         <circle cx="1320" cy="450" r="260" className="dl-deco-circle dl-deco-circle--right" />
       </svg>
 
-      {/* ── Header ──────────────────────────────────────────── */}
+      {/* ── Header ──────────────────────────────────────────────────────────── */}
       <header className="dl-header">
-        <div className="dl-logo" onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-          Dev<span>Learn</span>
-        </div>
+        <Link to="/" className="dl-logo">Dev<span>Learn</span></Link>
         <nav className="dl-nav">
-          <a href="#ueber-uns" className="dl-nav-active">Über uns</a>
-          <a onClick={() => navigate("/preise")} style={{ cursor: "pointer" }}>Preise</a>
+          <Link to="/ueber-uns" className="dl-nav-active">Über uns</Link>
+          <Link to="/preise">Preise</Link>
         </nav>
         <button
           className="dl-theme-toggle"
@@ -60,7 +58,7 @@ export default function UeberUns() {
         </button>
       </header>
 
-      {/* ── Inhalt ──────────────────────────────────────────── */}
+      {/* ── Inhalt ──────────────────────────────────────────────────────────── */}
       <main className="ue-main">
 
         {/* Hero-Bereich */}
@@ -70,7 +68,7 @@ export default function UeberUns() {
             Lernen neu<br />gedacht.
           </h1>
           <p className="dl-hero-sub">
-            DevLearn ist eine moderne Lernplattform für angehende Webentwickler —
+            DevLearn ist eine moderne Lernplattform für angehende Webentwickler –
             strukturiert, praxisnah und auf IHK-Niveau.
           </p>
         </section>
@@ -88,7 +86,7 @@ export default function UeberUns() {
             </div>
             <h3 className="ue-card-title">Unsere Mission</h3>
             <p className="ue-card-text">
-              Wir glauben, dass modernes Webentwickeln für jeden erlernbar ist —
+              Wir glauben, dass modernes Webentwickeln für jeden erlernbar ist –
               mit den richtigen Materialien, einer klaren Struktur und echten Projekten.
               DevLearn macht Wissen zugänglich und messbar.
             </p>
@@ -107,7 +105,7 @@ export default function UeberUns() {
             <p className="ue-card-text">
               Hinter DevLearn stecken erfahrene Entwickler und Pädagogen,
               die selbst den Weg vom Anfänger zum Professional gegangen sind.
-              Wir wissen, wo es hakt — und wie man es löst.
+              Wir wissen, wo es hakt – und wie man es löst.
             </p>
           </div>
 
@@ -119,7 +117,7 @@ export default function UeberUns() {
             </div>
             <h3 className="ue-card-title">Unser Ansatz</h3>
             <p className="ue-card-text">
-              Kein trockenes Lesen — bei DevLearn lernst du durch echte Projekte,
+              Kein trockenes Lesen – bei DevLearn lernst du durch echte Projekte,
               schrittweise Anleitungen und direktes Feedback. Vom ersten HTML-Tag
               bis zur fertigen React-App.
             </p>
@@ -135,7 +133,7 @@ export default function UeberUns() {
             <h3 className="ue-card-title">IHK-Zertifizierung</h3>
             <p className="ue-card-text">
               Unsere Kurse sind auf die IHK-Prüfungsanforderungen abgestimmt.
-              Du lernst nicht nur für die Praxis — du bekommst auch einen
+              Du lernst nicht nur für die Praxis – du bekommst auch einen
               anerkannten Abschluss, der auf dem Arbeitsmarkt zählt.
             </p>
           </div>
@@ -149,9 +147,9 @@ export default function UeberUns() {
             <button className="dl-btn-primary" onClick={() => navigate("/register")}>
               Jetzt starten
             </button>
-            <button className="dl-btn-ghost" onClick={() => navigate("/")}>
+            <Link to="/" className="dl-btn-ghost">
               Zurück zur Startseite
-            </button>
+            </Link>
           </div>
         </section>
 

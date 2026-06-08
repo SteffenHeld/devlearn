@@ -1,5 +1,5 @@
-import { useState, FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
@@ -40,6 +40,9 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // Kurzer Delay damit onAuthStateChanged feuern kann
+      // bevor React Router zur Dashboard-Route navigiert
+      await new Promise((resolve) => setTimeout(resolve, 300));
       navigate("/dashboard");
     } catch {
       setError("E-Mail oder Passwort falsch.");
@@ -60,10 +63,9 @@ export default function LoginPage() {
       </svg>
 
       <div className="dl-auth-content">
+
         {/* Logo */}
-        <div className="dl-auth-logo">
-          Dev<span>Learn</span>
-        </div>
+        <Link to="/" className="dl-auth-logo">Dev<span>Learn</span></Link>
 
         <div className="dl-form-card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
@@ -115,17 +117,14 @@ export default function LoginPage() {
           </form>
 
           <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/")} style={{ padding: "6px 10px" }}>
+            <Link to="/" className="dl-btn dl-btn--ghost dl-btn--sm" style={{ padding: "6px 10px" }}>
               <IconBack /> Startseite
-            </button>
+            </Link>
             <p style={{ fontSize: 13, color: "var(--dl-text-faint)" }}>
               Noch kein Konto?{" "}
-              <span
-                style={{ color: "var(--dl-violet-400)", cursor: "pointer", fontWeight: 500 }}
-                onClick={() => navigate("/register")}
-              >
+              <Link to="/register" style={{ color: "var(--dl-violet-400)", fontWeight: 500 }}>
                 Registrieren
-              </span>
+              </Link>
             </p>
           </div>
         </div>

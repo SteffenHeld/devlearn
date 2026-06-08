@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext";
 import useCourses from "../../hooks/useCourses";
 import { useProgress } from "../../hooks/useProgress";
-import { useAuth } from "../../hooks/useAuth";
+import type { CourseProgress } from "../../types";
 
-/* ── Icons ────────────────────────────────────────────────────── */
+/* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconSearch = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -41,22 +42,20 @@ const bannerColor: Record<string, string> = {
   "HTML/CSS/JS": "--violet", "React/Vite/TS": "--teal", "Figma": "--amber", "Framer": "--coral",
 };
 const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐", "React/Vite/TS": "⚛️", "Figma": "🎨", "Framer": "🪄",
+  "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
 };
 
 export default function CoursesPage() {
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
-  // Default-Export wie im Original
   const { courses, loading, error } = useCourses();
   const { progress } = useProgress();
-  const { user } = useAuth();
+  // role kommt direkt aus useAuth — kein (user as any).role nötig
+  const { role } = useAuth();
 
   const [search, setSearch] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState<string>("Alle");
-
-  const isTeacher = (user as any)?.role === "teacher";
 
   const filtered = courses.filter((c) => {
     const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
@@ -67,7 +66,7 @@ export default function CoursesPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Sidebar ───────────────────────────────────────────── */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
         <p className="dl-sidebar-section">Menü</p>
@@ -88,14 +87,15 @@ export default function CoursesPage() {
         </nav>
       </aside>
 
-      {/* ── Main ──────────────────────────────────────────────── */}
+      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
           <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/dashboard")}>
             <IconBack /> Dashboard
           </button>
           <div className="dl-topbar-actions">
-            {isTeacher && (
+            {/* Teacher-Button nur anzeigen wenn Rolle wirklich "teacher" ist */}
+            {role === "teacher" && (
               <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => navigate("/teacher/kurse")}>
                 + Kurs verwalten
               </button>
@@ -178,7 +178,7 @@ export default function CoursesPage() {
           {!loading && filtered.length > 0 && (
             <div className="dl-courses-grid">
               {filtered.map((course) => {
-                const p = progress?.[course.id];
+                const p: CourseProgress | undefined = progress?.[course.id];
                 const total = course.lessonCount ?? 0;
                 const done = p?.completed ?? 0;
                 const pct = total > 0 ? Math.round((done / total) * 100) : 0;
@@ -191,7 +191,6 @@ export default function CoursesPage() {
                   <div
                     key={course.id}
                     className="dl-course-card"
-                    // Gleicher URL-Pfad wie im Original: /kurse/:id
                     onClick={() => navigate(`/kurse/${course.id}`)}
                     role="button"
                     tabIndex={0}
@@ -200,7 +199,7 @@ export default function CoursesPage() {
                   >
                     <div className={`dl-course-banner dl-course-banner${variant}`}>
                       <span className="dl-course-icon">{bannerEmoji[cat] ?? "📖"}</span>
-                      {isComplete && <span className="dl-badge dl-badge--teal" style={{ marginLeft: "auto" }}>Fertig ✓</span>}
+                      {isComplete && <span className="dl-badge dl-badge--teal" style={{ marginLeft: "auto" }}>Fertig ✔</span>}
                       {!isComplete && started && <span className="dl-badge dl-badge--violet" style={{ marginLeft: "auto" }}>In Arbeit</span>}
                     </div>
                     <div className="dl-course-body">

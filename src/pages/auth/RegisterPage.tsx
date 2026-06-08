@@ -1,7 +1,8 @@
-import { useState, FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, type FormEvent } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { auth } from "../../firebase/firebase";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
 
 export default function RegisterPage() {
@@ -9,16 +10,17 @@ export default function RegisterPage() {
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
 
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
+  const [name, setName]       = useState<string>("");
+  const [email, setEmail]     = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirm, setConfirm] = useState<string>("");
-  const [error, setError] = useState<string>("");
+  const [error, setError]     = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setError("");
+
     if (password !== confirm) {
       setError("Die Passwörter stimmen nicht überein.");
       return;
@@ -27,10 +29,29 @@ export default function RegisterPage() {
       setError("Das Passwort muss mindestens 6 Zeichen lang sein.");
       return;
     }
+
     setLoading(true);
     try {
+      // 1. Firebase Auth User anlegen
       const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+      // 2. Displayname setzen
       await updateProfile(cred.user, { displayName: name });
+
+      // 3. User-Dokument in Firestore anlegen mit Rolle "student"
+      //    Ohne diesen Schritt findet AuthContext keine Rolle
+      //    und ProtectedRoute blockiert alle geschützten Routen
+      await setDoc(doc(db, "users", cred.user.uid), {
+        name,
+        email,
+        role: "student",
+        createdAt: new Date().toISOString(),
+      });
+
+      // 4. Kurzer Delay damit onAuthStateChanged feuern kann
+      //    bevor React Router zur Dashboard-Route navigiert
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
       navigate("/dashboard");
     } catch {
       setError("Registrierung fehlgeschlagen. Bitte versuche es erneut.");
@@ -51,10 +72,9 @@ export default function RegisterPage() {
       </svg>
 
       <div className="dl-auth-content">
+
         {/* Logo */}
-        <div className="dl-auth-logo">
-          Dev<span>Learn</span>
-        </div>
+        <Link to="/" className="dl-auth-logo">Dev<span>Learn</span></Link>
 
         {/* Card */}
         <div className="dl-form-card">
@@ -148,12 +168,9 @@ export default function RegisterPage() {
 
           <p style={{ fontSize: 13, color: "var(--dl-text-faint)", marginTop: 18, textAlign: "center" }}>
             Bereits ein Konto?{" "}
-            <span
-              style={{ color: "var(--dl-violet-400)", cursor: "pointer", fontWeight: 500 }}
-              onClick={() => navigate("/")}
-            >
+            <Link to="/" style={{ color: "var(--dl-violet-400)", fontWeight: 500 }}>
               Jetzt anmelden
-            </span>
+            </Link>
           </p>
         </div>
       </div>

@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 import useCourses from "../../hooks/useCourses";
+import type { Course } from "../../types";
 
-/* ── Icons ────────────────────────────────────────────────────── */
+/* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconDashboard = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -62,7 +63,7 @@ const IconX = () => (
 );
 
 const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐", "React/Vite/TS": "⚛️", "Figma": "🎨", "Framer": "🪄",
+  "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
 };
 const CATEGORIES = ["HTML/CSS/JS", "React/Vite/TS", "Figma", "Framer"];
 type Tab = "courses" | "students";
@@ -71,17 +72,17 @@ export default function TeacherDashboard() {
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
+  // Korrekter Import aus context/AuthContext
   const { user } = useAuth();
-  const { courses, addCourse } = useCourses() as any;
+  const { courses, addCourse } = useCourses();
   const [activeTab, setActiveTab] = useState<Tab>("courses");
 
-  // Neuer-Kurs-Formular State — direkt im Dashboard
-  const [showForm, setShowForm]         = useState(false);
-  const [newTitle, setNewTitle]         = useState("");
-  const [newCategory, setNewCategory]   = useState("HTML/CSS/JS");
-  const [newDesc, setNewDesc]           = useState("");
-  const [saving, setSaving]             = useState(false);
-  const [formError, setFormError]       = useState("");
+  const [showForm, setShowForm]       = useState(false);
+  const [newTitle, setNewTitle]       = useState("");
+  const [newCategory, setNewCategory] = useState("HTML/CSS/JS");
+  const [newDesc, setNewDesc]         = useState("");
+  const [saving, setSaving]           = useState(false);
+  const [formError, setFormError]     = useState("");
 
   const handleLogout = async () => {
     navigate("/");
@@ -113,12 +114,12 @@ export default function TeacherDashboard() {
   const initials = (user?.displayName ?? "L")
     .split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
-  const totalLessons = courses.reduce((sum: number, c: any) => sum + (c.lessonCount ?? 0), 0);
+  const totalLessons = courses.reduce((sum: number, c: Course) => sum + (c.lessonCount ?? 0), 0);
 
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Sidebar ───────────────────────────────────────────── */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
         <p className="dl-sidebar-section">Lehrer-Panel</p>
@@ -126,11 +127,11 @@ export default function TeacherDashboard() {
           <button className="dl-sidebar-link active" aria-current="page">
             <IconDashboard /> Dashboard
           </button>
-          {/* FIX: /teacher/kurse statt /kurse */}
           <button className="dl-sidebar-link" onClick={() => navigate("/teacher/kurse")}>
             <IconBook /> Kurse verwalten
           </button>
-          <button className="dl-sidebar-link">
+          {/* Schüler-Verwaltung noch nicht implementiert — deaktiviert */}
+          <button className="dl-sidebar-link" disabled style={{ opacity: 0.4, cursor: "not-allowed" }}>
             <IconUsers /> Schüler
           </button>
         </nav>
@@ -148,12 +149,11 @@ export default function TeacherDashboard() {
         </div>
       </aside>
 
-      {/* ── Hauptbereich ──────────────────────────────────────── */}
+      {/* ── Hauptbereich ─────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
           <span className="dl-topbar-title">Lehrer-Dashboard</span>
           <div className="dl-topbar-actions">
-            {/* FIX: öffnet Formular im Dashboard statt /kurse/new */}
             <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => setShowForm(true)}>
               <IconPlus /> Neuer Kurs
             </button>
@@ -177,7 +177,9 @@ export default function TeacherDashboard() {
             </div>
             <div className="dl-stat">
               <p className="dl-stat-label">Module</p>
-              <p className="dl-stat-value">{courses.reduce((s: number, c: any) => s + (c.moduleCount ?? 0), 0)}</p>
+              <p className="dl-stat-value">
+                {courses.reduce((s: number, c: Course) => s + (c.moduleCount ?? 0), 0)}
+              </p>
             </div>
             <div className="dl-stat">
               <p className="dl-stat-label">Lektionen</p>
@@ -281,7 +283,7 @@ export default function TeacherDashboard() {
                       </tr>
                     </thead>
                     <tbody>
-                      {courses.map((course: any) => {
+                      {courses.map((course: Course) => {
                         const cat = course.category ?? "HTML/CSS/JS";
                         return (
                           <tr key={course.id}>
@@ -312,7 +314,7 @@ export default function TeacherDashboard() {
             </div>
           )}
 
-          {/* Schüler Tab */}
+          {/* Schüler Tab — noch nicht implementiert */}
           {activeTab === "students" && (
             <div className="dl-empty">
               <div className="dl-empty-icon">👥</div>

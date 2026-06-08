@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
+import type { Course } from "../../types";
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -41,21 +42,21 @@ const IconMoon = () => (
 
 const CATEGORIES = ["HTML/CSS/JS", "React/Vite/TS", "Figma", "Framer"];
 const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐", "React/Vite/TS": "⚛️", "Figma": "🎨", "Framer": "🪄",
+  "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
 };
 
 export default function TeacherCoursesPage() {
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
-  const { courses, addCourse } = useCourses() as any;
+  const { courses, addCourse } = useCourses();
 
-  const [showForm, setShowForm] = useState<boolean>(false);
-  const [title, setTitle]       = useState<string>("");
-  const [category, setCategory] = useState<string>("HTML/CSS/JS");
+  const [showForm, setShowForm]       = useState<boolean>(false);
+  const [title, setTitle]             = useState<string>("");
+  const [category, setCategory]       = useState<string>("HTML/CSS/JS");
   const [description, setDescription] = useState<string>("");
-  const [saving, setSaving]     = useState<boolean>(false);
-  const [error, setError]       = useState<string>("");
+  const [saving, setSaving]           = useState<boolean>(false);
+  const [error, setError]             = useState<string>("");
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,24 +77,29 @@ export default function TeacherCoursesPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* Sidebar */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
             Dashboard
           </button>
           <button className="dl-sidebar-link active" aria-current="page">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
             Kurse verwalten
           </button>
         </nav>
       </aside>
 
+      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
-        {/* Top Bar */}
         <div className="dl-topbar">
           <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/dashboard")}>
             <IconBack /> Dashboard
@@ -114,7 +120,7 @@ export default function TeacherCoursesPage() {
             <p className="dl-page-sub">Erstelle und bearbeite deine Kurse, Module und Lektionen.</p>
           </div>
 
-          {/* Neuer Kurs — Inline-Formular */}
+          {/* Neuer Kurs – Inline-Formular */}
           {showForm && (
             <div className="dl-card" style={{ marginBottom: 28, borderColor: "var(--dl-violet-200)" }}>
               <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--dl-text-primary)", marginBottom: 20 }}>
@@ -187,7 +193,7 @@ export default function TeacherCoursesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {courses.map((course: any) => {
+                  {courses.map((course: Course) => {
                     const cat = course.category ?? "HTML/CSS/JS";
                     return (
                       <tr key={course.id}>
@@ -208,9 +214,10 @@ export default function TeacherCoursesPage() {
                             >
                               <IconEdit /> Bearbeiten
                             </button>
+                            {/* Studentenansicht — korrekter deutscher Pfad */}
                             <button
                               className="dl-btn dl-btn--ghost dl-btn--sm"
-                              onClick={() => navigate(`/courses/${course.id}`)}
+                              onClick={() => navigate(`/kurse/${course.id}`)}
                               title="Studentenansicht"
                             >
                               <IconEye />

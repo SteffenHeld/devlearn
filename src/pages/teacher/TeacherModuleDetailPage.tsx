@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
+import type { Course, Module, Lesson } from "../../types";
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -11,12 +12,6 @@ const IconPlus = () => (
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-  </svg>
-);
-const IconEdit = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
   </svg>
 );
 const IconSun = () => (
@@ -39,15 +34,15 @@ const bannerEmoji: Record<string, string> = {
 };
 
 export default function TeacherModuleDetailPage() {
-  const { kursId: courseId, modulId: moduleId } = useParams<{ kursId: string; modulId: string }>();
+  const { kursId, modulId } = useParams<{ kursId: string; modulId: string }>();
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
-  const { courses, addLesson } = useCourses() as any;
+  const { courses, addLesson } = useCourses();
 
-  const course = courses.find((c: any) => c.id === courseId);
-  const mod = course?.modules?.find((m: any) => m.id === moduleId);
-  const lessons: any[] = mod?.lessons ?? [];
+  const course = courses.find((c: Course) => c.id === kursId);
+  const mod = course?.modules?.find((m: Module) => m.id === modulId);
+  const lessons: Lesson[] = mod?.lessons ?? [];
 
   const [showLessonForm, setShowLessonForm] = useState<boolean>(false);
   const [lessonTitle, setLessonTitle]       = useState<string>("");
@@ -63,7 +58,9 @@ export default function TeacherModuleDetailPage() {
           <div className="dl-empty">
             <div className="dl-empty-icon">🔍</div>
             <p className="dl-empty-text">Modul nicht gefunden.</p>
-            <button className="dl-btn dl-btn--ghost" onClick={() => navigate(`/teacher/kurse/${courseId}`)}><IconBack /> Zurück</button>
+            <button className="dl-btn dl-btn--ghost" onClick={() => navigate(`/teacher/kurse/${kursId}`)}>
+              <IconBack /> Zurück
+            </button>
           </div>
         </div></main>
       </div>
@@ -75,37 +72,49 @@ export default function TeacherModuleDetailPage() {
     if (!lessonTitle.trim()) { setLessonError("Bitte einen Titel eingeben."); return; }
     setSavingLesson(true); setLessonError("");
     try {
-      await addLesson(courseId, moduleId, {
+      await addLesson(kursId!, modulId!, {
         title: lessonTitle.trim(),
         content: lessonContent.trim(),
-        duration: lessonDuration ? parseInt(lessonDuration) : null,
+        // duration ist number in types.ts — 0 statt null wenn leer
+        duration: lessonDuration ? parseInt(lessonDuration) : 0,
       });
-      setLessonTitle(""); setLessonContent(""); setLessonDuration(""); setShowLessonForm(false);
-    } catch { setLessonError("Fehler beim Erstellen."); }
-    finally { setSavingLesson(false); }
+      setLessonTitle(""); setLessonContent(""); setLessonDuration("");
+      setShowLessonForm(false);
+    } catch {
+      setLessonError("Fehler beim Erstellen.");
+    } finally {
+      setSavingLesson(false);
+    }
   };
 
   const cat = course.category ?? "HTML/CSS/JS";
-  const modIndex = (course.modules ?? []).findIndex((m: any) => m.id === moduleId);
+  const modIndex = (course.modules ?? []).findIndex((m: Module) => m.id === modulId);
 
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* Sidebar */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link" onClick={() => navigate("/teacher/kurse")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
             Kurse
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate(`/teacher/kurse/${courseId}`)}>
-            <span style={{ fontSize: 17 }}>{bannerEmoji[cat]}</span>
+          <button className="dl-sidebar-link" onClick={() => navigate(`/teacher/kurse/${kursId}`)}>
+            <span style={{ fontSize: 17 }}>{bannerEmoji[cat] ?? "📖"}</span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.title}</span>
           </button>
           <div className="dl-sidebar-link active" style={{ cursor: "default" }}>
-            <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--dl-violet-50)", color: "var(--dl-violet-600)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>
+            <span style={{
+              width: 20, height: 20, borderRadius: "50%",
+              background: "var(--dl-violet-50)", color: "var(--dl-violet-600)",
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              fontSize: 11, fontWeight: 600, flexShrink: 0,
+            }}>
               {modIndex + 1}
             </span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{mod.title}</span>
@@ -115,7 +124,7 @@ export default function TeacherModuleDetailPage() {
           <>
             <p className="dl-sidebar-section" style={{ marginTop: 16 }}>Lektionen</p>
             <nav className="dl-sidebar-nav">
-              {lessons.map((l: any, i: number) => (
+              {lessons.map((l: Lesson, i: number) => (
                 <div key={l.id} className="dl-sidebar-link" style={{ fontSize: 12, cursor: "default", gap: 8 }}>
                   <span style={{ fontSize: 11, color: "var(--dl-text-faint)", minWidth: 16 }}>{i + 1}.</span>
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{l.title}</span>
@@ -126,9 +135,10 @@ export default function TeacherModuleDetailPage() {
         )}
       </aside>
 
+      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/teacher/kurse/${courseId}`)}>
+          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/teacher/kurse/${kursId}`)}>
             <IconBack /> {course.title}
           </button>
           <div className="dl-topbar-actions">
@@ -145,7 +155,7 @@ export default function TeacherModuleDetailPage() {
           <nav className="dl-breadcrumb" aria-label="Breadcrumb">
             <span role="button" onClick={() => navigate("/teacher/kurse")}>Kurse</span>
             <span className="dl-breadcrumb-sep">/</span>
-            <span role="button" onClick={() => navigate(`/teacher/kurse/${courseId}`)}>{course.title}</span>
+            <span role="button" onClick={() => navigate(`/teacher/kurse/${kursId}`)}>{course.title}</span>
             <span className="dl-breadcrumb-sep">/</span>
             <span className="dl-breadcrumb-current">{mod.title}</span>
           </nav>
@@ -165,16 +175,33 @@ export default function TeacherModuleDetailPage() {
           {/* Neue Lektion — Formular */}
           {showLessonForm && (
             <div className="dl-card" style={{ marginBottom: 24, borderColor: "var(--dl-violet-200)" }}>
-              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "var(--dl-text-primary)" }}>Neue Lektion</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "var(--dl-text-primary)" }}>
+                Neue Lektion
+              </h2>
               <form onSubmit={handleAddLesson} noValidate>
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "0 16px" }}>
                   <div className="dl-field">
                     <label htmlFor="lesson-title">Lektionstitel</label>
-                    <input id="lesson-title" type="text" placeholder="z.B. Was ist HTML?" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} required />
+                    <input
+                      id="lesson-title"
+                      type="text"
+                      placeholder="z.B. Was ist HTML?"
+                      value={lessonTitle}
+                      onChange={(e) => setLessonTitle(e.target.value)}
+                      required
+                    />
                   </div>
                   <div className="dl-field">
                     <label htmlFor="lesson-duration">Dauer (Min.)</label>
-                    <input id="lesson-duration" type="number" min="1" max="120" placeholder="10" value={lessonDuration} onChange={(e) => setLessonDuration(e.target.value)} />
+                    <input
+                      id="lesson-duration"
+                      type="number"
+                      min="1"
+                      max="120"
+                      placeholder="10"
+                      value={lessonDuration}
+                      onChange={(e) => setLessonDuration(e.target.value)}
+                    />
                   </div>
                 </div>
                 <div className="dl-field">
@@ -189,8 +216,12 @@ export default function TeacherModuleDetailPage() {
                 </div>
                 {lessonError && <p className="dl-alert dl-alert--error">{lessonError}</p>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowLessonForm(false); setLessonError(""); }}>Abbrechen</button>
-                  <button type="submit" className="dl-btn dl-btn--primary" disabled={savingLesson}>{savingLesson ? "Erstellt…" : "Lektion erstellen"}</button>
+                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowLessonForm(false); setLessonError(""); }}>
+                    Abbrechen
+                  </button>
+                  <button type="submit" className="dl-btn dl-btn--primary" disabled={savingLesson}>
+                    {savingLesson ? "Erstellt…" : "Lektion erstellen"}
+                  </button>
                 </div>
               </form>
             </div>
@@ -224,28 +255,24 @@ export default function TeacherModuleDetailPage() {
                       <th>Titel</th>
                       <th>Dauer</th>
                       <th>Inhalt</th>
-                      <th style={{ width: 100 }}></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {lessons.map((lesson: any, i: number) => (
+                    {lessons.map((lesson: Lesson, i: number) => (
                       <tr key={lesson.id}>
                         <td style={{ color: "var(--dl-text-faint)", fontSize: 13 }}>{i + 1}</td>
                         <td style={{ fontWeight: 500 }}>{lesson.title}</td>
                         <td style={{ color: "var(--dl-text-muted)" }}>
-                          {lesson.duration ? `${lesson.duration} Min.` : <span style={{ color: "var(--dl-text-faint)" }}>–</span>}
+                          {lesson.duration > 0
+                            ? `${lesson.duration} Min.`
+                            : <span style={{ color: "var(--dl-text-faint)" }}>–</span>
+                          }
                         </td>
                         <td>
                           {lesson.content
                             ? <span className="dl-badge dl-badge--teal">Vorhanden</span>
                             : <span className="dl-badge dl-badge--gray">Leer</span>
                           }
-                        </td>
-                        <td>
-                          <button className="dl-btn dl-btn--ghost dl-btn--sm"
-                            onClick={() => navigate(`/teacher/kurse/${courseId}/modules/${moduleId}/lessons/${lesson.id}`)}>
-                            <IconEdit /> Edit
-                          </button>
                         </td>
                       </tr>
                     ))}

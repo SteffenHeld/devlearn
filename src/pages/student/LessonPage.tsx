@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import { useAuth } from "../../context/AuthContext";
-import { Lesson } from "../../types";
+import { useProgress } from "../../hooks/useProgress";
 import { useThemeToggle } from "../../context/ThemeContext";
+import type { Lesson } from "../../types";
 
-/* ── Icons ────────────────────────────────────────────────────── */
+/* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
@@ -44,7 +45,6 @@ const IconMoon = () => (
 );
 
 export default function LessonPage() {
-  // Gleiche Param-Namen wie im Original
   const { kursId, modulId, lektionId } = useParams<{
     kursId: string;
     modulId: string;
@@ -55,46 +55,40 @@ export default function LessonPage() {
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
 
-  const [lesson, setLesson]       = useState<Lesson | null>(null);
-  const [completed, setCompleted] = useState<boolean>(false);
-  const [saving, setSaving]       = useState<boolean>(false);
-  const [loading, setLoading]     = useState<boolean>(true);
+  // markLessonComplete aus useProgress — schreibt korrekt nach users/{uid}/progress/{courseId}
+  const { progress, markLessonComplete } = useProgress();
 
-  // Gleiche Firestore-Logik wie im Original
+  const [lesson, setLesson]   = useState<Lesson | null>(null);
+  const [saving, setSaving]   = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+
   useEffect(() => {
     if (!kursId || !modulId || !lektionId || !user) return;
 
-    async function fetchData(): Promise<void> {
+    async function fetchLesson(): Promise<void> {
       const lessonSnap = await getDoc(
         doc(db, "courses", kursId!, "modules", modulId!, "lessons", lektionId!)
       );
       if (lessonSnap.exists()) {
         setLesson({ id: lessonSnap.id, ...(lessonSnap.data() as Omit<Lesson, "id">) });
       }
-
-      // Fortschritt pro Lektion — Struktur wie im Original: users/{uid}/progress/{lektionId}
-      const progressSnap = await getDoc(
-        doc(db, "users", user!.uid, "progress", lektionId!)
-      );
-      if (progressSnap.exists()) {
-        setCompleted(progressSnap.data().completed as boolean);
-      }
-
       setLoading(false);
     }
 
-    fetchData();
+    fetchLesson();
   }, [kursId, modulId, lektionId, user]);
 
-  // Gleiche handleComplete-Logik wie im Original
+  // Abschluss-Status aus useProgress lesen — wird automatisch aktualisiert
+  // wenn markLessonComplete aufgerufen wird (Echtzeit-Listener in useProgress)
+  const completed =
+    progress[kursId ?? ""]?.completedLessons?.includes(lektionId ?? "") ?? false;
+
   async function handleComplete(): Promise<void> {
-    if (!user || !lektionId || saving) return;
+    if (!kursId || !modulId || !lektionId || saving) return;
     setSaving(true);
-    await setDoc(doc(db, "users", user.uid, "progress", lektionId), {
-      completed: true,
-      completedAt: Timestamp.now(),
-    });
-    setCompleted(true);
+    // markLessonComplete schreibt korrekt nach users/{uid}/progress/{courseId}
+    // und zählt completed, completedLessons und modules[moduleId] hoch
+    await markLessonComplete(kursId, modulId, lektionId);
     setSaving(false);
   }
 
@@ -115,7 +109,7 @@ export default function LessonPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Sidebar ───────────────────────────────────────────── */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
         <p className="dl-sidebar-section">Navigation</p>
@@ -154,10 +148,11 @@ export default function LessonPage() {
               background: completed ? "var(--dl-teal-400)" : "var(--dl-violet-400)",
               display: "inline-flex", alignItems: "center", justifyContent: "center",
             }}>
-              {completed
-                ? <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                : null
-              }
+              {completed && (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              )}
             </span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {lesson?.title ?? "Lektion"}
@@ -166,9 +161,8 @@ export default function LessonPage() {
         </nav>
       </aside>
 
-      {/* ── Main ──────────────────────────────────────────────── */}
+      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
-        {/* Top Bar */}
         <div className="dl-topbar">
           <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}>
             <IconBack /> Zurück zum Modul
@@ -192,12 +186,11 @@ export default function LessonPage() {
             <span className="dl-breadcrumb-current">{lesson?.title}</span>
           </nav>
 
-          {/* Zweispaltiges Layout: Content + Status-Sidebar */}
+          {/* Zweispaltiges Layout */}
           <div className="dl-lesson-layout">
 
-            {/* ── Linke Spalte: Inhalt ────────────────────────── */}
+            {/* ── Linke Spalte: Inhalt ─────────────────────────────────────── */}
             <div>
-              {/* Titel + Badge */}
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
                 <h1 className="dl-page-title" style={{ marginBottom: 0 }}>{lesson?.title}</h1>
                 {completed && (
@@ -212,7 +205,6 @@ export default function LessonPage() {
               {/* Lektion-Inhalt */}
               <div className="dl-lesson-content">
                 {lesson?.content ? (
-                  /* Wenn content HTML enthält, rendern — sonst als Text */
                   lesson.content.trim().startsWith("<")
                     ? <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
                     : <p>{lesson.content}</p>
@@ -239,7 +231,6 @@ export default function LessonPage() {
                     {saving ? "Wird gespeichert…" : "Lektion abschließen"}
                   </button>
                 )}
-
                 {completed && (
                   <button
                     className="dl-btn dl-btn--ghost"
@@ -252,7 +243,7 @@ export default function LessonPage() {
               </div>
             </div>
 
-            {/* ── Rechte Spalte: Status-Card ───────────────────── */}
+            {/* ── Rechte Spalte: Status-Card ───────────────────────────────── */}
             <aside>
               <div className="dl-card">
                 <p style={{
@@ -262,7 +253,6 @@ export default function LessonPage() {
                   Status
                 </p>
 
-                {/* Abschluss-Status */}
                 <div style={{
                   display: "flex", alignItems: "center", gap: 12,
                   padding: "14px 16px", borderRadius: "var(--dl-radius-md)",
@@ -273,8 +263,8 @@ export default function LessonPage() {
                   <div style={{
                     width: 32, height: 32, borderRadius: "50%",
                     background: completed ? "var(--dl-teal-400)" : "var(--dl-border)",
-                    display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                    transition: "background 0.3s",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    flexShrink: 0, transition: "background 0.3s",
                   }}>
                     {completed && <IconCheck />}
                   </div>
@@ -292,7 +282,6 @@ export default function LessonPage() {
                   </div>
                 </div>
 
-                {/* Navigations-Links */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <button
                     className="dl-btn dl-btn--ghost"
@@ -310,7 +299,6 @@ export default function LessonPage() {
                   </button>
                 </div>
 
-                {/* Abschließen-Button in Sidebar (wenn noch offen) */}
                 {!completed && (
                   <button
                     className="dl-btn dl-btn--teal"

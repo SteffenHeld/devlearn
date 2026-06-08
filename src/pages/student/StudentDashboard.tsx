@@ -2,11 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../context/AuthContext";
 import useCourses from "../../hooks/useCourses";
 import { useProgress } from "../../hooks/useProgress";
+import type { CourseProgress } from "../../types";
 
-/* ── Sidebar-Icons ────────────────────────────────────────────── */
+/* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconDashboard = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
@@ -25,7 +26,13 @@ const IconAward = () => (
 );
 const IconLogout = () => (
   <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+    <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+  </svg>
+);
+const IconCheck = () => (
+  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="20 6 9 17 4 12"/>
   </svg>
 );
 const IconSun = () => (
@@ -42,24 +49,12 @@ const IconMoon = () => (
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
   </svg>
 );
-const IconCheck = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-);
 
-/* ── Banner-Farben je Kategorie ───────────────────────────────── */
 const bannerColor: Record<string, string> = {
-  "HTML/CSS/JS": "--violet",
-  "React/Vite/TS": "--teal",
-  "Figma": "--amber",
-  "Framer": "--coral",
+  "HTML/CSS/JS": "--violet", "React/Vite/TS": "--teal", "Figma": "--amber", "Framer": "--coral",
 };
 const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐",
-  "React/Vite/TS": "⚛️",
-  "Figma": "🎨",
-  "Framer": "🪄",
+  "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
 };
 
 export default function StudentDashboard() {
@@ -84,18 +79,20 @@ export default function StudentDashboard() {
     .toUpperCase();
 
   const completedCourses = courses.filter((c) => {
-    const p = progress[c.id];
+    const p: CourseProgress | undefined = progress[c.id];
     if (!p) return false;
     const total = c.lessonCount ?? 0;
     return total > 0 && p.completed >= total;
   }).length;
 
   const totalLessons = courses.reduce((sum, c) => sum + (c.lessonCount ?? 0), 0);
-  const completedLessons = Object.values(progress).reduce((sum, p) => sum + (p.completed ?? 0), 0);
+  const completedLessons = Object.values(progress).reduce(
+    (sum, p) => sum + (p.completed ?? 0), 0
+  );
   const avgProgress = courses.length
     ? Math.round(
         courses.reduce((sum, c) => {
-          const p = progress[c.id];
+          const p: CourseProgress | undefined = progress[c.id];
           const total = c.lessonCount ?? 0;
           return sum + (total > 0 ? ((p?.completed ?? 0) / total) * 100 : 0);
         }, 0) / courses.length
@@ -105,7 +102,7 @@ export default function StudentDashboard() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Sidebar ───────────────────────────────────────────── */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
 
@@ -117,7 +114,8 @@ export default function StudentDashboard() {
           <button className="dl-sidebar-link" onClick={() => navigate("/kurse")}>
             <IconBook /> Kurse
           </button>
-          <button className="dl-sidebar-link">
+          {/* Zertifikate noch nicht implementiert — deaktiviert */}
+          <button className="dl-sidebar-link" disabled style={{ opacity: 0.4, cursor: "not-allowed" }}>
             <IconAward /> Zertifikate
           </button>
         </nav>
@@ -136,9 +134,8 @@ export default function StudentDashboard() {
         </div>
       </aside>
 
-      {/* ── Hauptbereich ──────────────────────────────────────── */}
+      {/* ── Hauptbereich ─────────────────────────────────────────────────────── */}
       <main className="dl-main">
-        {/* Top Bar */}
         <div className="dl-topbar">
           <span className="dl-topbar-title">Übersicht</span>
           <div className="dl-topbar-actions">
@@ -148,9 +145,7 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* Page */}
         <div className="dl-page">
-          {/* Header */}
           <div className="dl-page-header">
             <h1 className="dl-page-title">Willkommen zurück, {firstName} 👋</h1>
             <p className="dl-page-sub">Hier ist dein aktueller Lernfortschritt.</p>
@@ -168,7 +163,12 @@ export default function StudentDashboard() {
             </div>
             <div className="dl-stat">
               <p className="dl-stat-label">Lektionen</p>
-              <p className="dl-stat-value">{completedLessons}<span style={{ fontSize: 16, color: "var(--dl-text-faint)", fontWeight: 400 }}>/{totalLessons}</span></p>
+              <p className="dl-stat-value">
+                {completedLessons}
+                <span style={{ fontSize: 16, color: "var(--dl-text-faint)", fontWeight: 400 }}>
+                  /{totalLessons}
+                </span>
+              </p>
             </div>
             <div className="dl-stat">
               <p className="dl-stat-label">Ø Fortschritt</p>
@@ -180,7 +180,9 @@ export default function StudentDashboard() {
           <div className="dl-section">
             <div className="dl-section-header">
               <h2 className="dl-section-title">Deine Kurse</h2>
-              <span className="dl-section-link" onClick={() => navigate("/kurse")}>Alle ansehen →</span>
+              <span className="dl-section-link" onClick={() => navigate("/kurse")}>
+                Alle ansehen →
+              </span>
             </div>
 
             {courses.length === 0 ? (
@@ -194,7 +196,7 @@ export default function StudentDashboard() {
             ) : (
               <div className="dl-courses-grid">
                 {courses.map((course) => {
-                  const p = progress[course.id];
+                  const p: CourseProgress | undefined = progress[course.id];
                   const total = course.lessonCount ?? 0;
                   const done = p?.completed ?? 0;
                   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
@@ -206,7 +208,8 @@ export default function StudentDashboard() {
                     <div
                       key={course.id}
                       className="dl-course-card"
-                      onClick={() => navigate(`/courses/${course.id}`)}
+                      // Korrekter deutscher URL-Pfad
+                      onClick={() => navigate(`/kurse/${course.id}`)}
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => e.key === "Enter" && navigate(`/kurse/${course.id}`)}
@@ -222,7 +225,9 @@ export default function StudentDashboard() {
                       </div>
                       <div className="dl-course-body">
                         <p className="dl-course-title">{course.title}</p>
-                        <p className="dl-course-meta">{course.moduleCount ?? 0} Module · {total} Lektionen</p>
+                        <p className="dl-course-meta">
+                          {course.moduleCount ?? 0} Module · {total} Lektionen
+                        </p>
                         <div className="dl-progress">
                           <div
                             className={`dl-progress-fill dl-progress-fill${isComplete ? "--teal" : "--violet"}`}

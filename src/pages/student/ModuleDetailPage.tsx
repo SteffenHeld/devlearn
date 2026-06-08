@@ -1,14 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  doc, getDoc, collection, getDocs, orderBy, query
-} from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
-import { Module, Lesson } from "../../types";
 import { useThemeToggle } from "../../context/ThemeContext";
-import { useAuth } from "../../context/AuthContext";
+import { useProgress } from "../../hooks/useProgress";
+import type { Module, Lesson } from "../../types";
 
-/* ── Icons ────────────────────────────────────────────────────── */
+/* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
@@ -17,16 +15,6 @@ const IconBack = () => (
 const IconPlay = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
     <polygon points="5 3 19 12 5 21 5 3"/>
-  </svg>
-);
-const IconCheck = () => (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-);
-const IconChevron = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <polyline points="9 18 15 12 9 6"/>
   </svg>
 );
 const IconSun = () => (
@@ -45,19 +33,19 @@ const IconMoon = () => (
 );
 
 export default function ModuleDetailPage() {
-  // Gleiche Param-Namen wie im Original
   const { kursId, modulId } = useParams<{ kursId: string; modulId: string }>();
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
-  const { user } = useAuth();
+
+  // useProgress liefert completedLessons aus users/{uid}/progress/{courseId}
+  // — kein eigener Firestore-Read pro Lektion nötig
+  const { progress } = useProgress();
 
   const [module, setModule]   = useState<Module | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
-  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Gleiche Firestore-Logik wie im Original + Fortschritt laden
   useEffect(() => {
     if (!kursId || !modulId) return;
 
@@ -70,41 +58,31 @@ export default function ModuleDetailPage() {
         setModule({ id: moduleSnap.id, ...(moduleSnap.data() as Omit<Module, "id">) });
       }
 
-      // Lektionen laden (orderBy "order" wie im Original)
+      // Lektionen laden
       const lessonsQuery = query(
         collection(db, "courses", kursId!, "modules", modulId!, "lessons"),
         orderBy("order")
       );
       const lessonsSnap = await getDocs(lessonsQuery);
-      const loadedLessons = lessonsSnap.docs.map((d) => ({
-        id: d.id,
-        ...(d.data() as Omit<Lesson, "id">),
-      }));
-      setLessons(loadedLessons);
-
-      // Fortschritt pro Lektion laden (Struktur wie in LessonPage: users/{uid}/progress/{lektionId})
-      if (user) {
-        const doneSet = new Set<string>();
-        await Promise.all(
-          loadedLessons.map(async (lesson) => {
-            const snap = await getDoc(
-              doc(db, "users", user.uid, "progress", lesson.id)
-            );
-            if (snap.exists() && snap.data().completed) {
-              doneSet.add(lesson.id);
-            }
-          })
-        );
-        setCompletedIds(doneSet);
-      }
+      setLessons(
+        lessonsSnap.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<Lesson, "id">),
+        }))
+      );
 
       setLoading(false);
     }
 
     fetchData();
-  }, [kursId, modulId, user]);
+  }, [kursId, modulId]);
 
-  const done  = completedIds.size;
+  // Abgeschlossene Lektionen aus useProgress lesen — reaktiv, kein eigener Read
+  const completedLessons: string[] =
+    progress[kursId ?? ""]?.completedLessons ?? [];
+  const completedIds = new Set(completedLessons);
+
+  const done  = lessons.filter((l) => completedIds.has(l.id)).length;
   const total = lessons.length;
   const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
   const nextLesson = lessons.find((l) => !completedIds.has(l.id));
@@ -126,7 +104,7 @@ export default function ModuleDetailPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Sidebar ───────────────────────────────────────────── */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
         <p className="dl-sidebar-section">Navigation</p>
@@ -199,9 +177,8 @@ export default function ModuleDetailPage() {
         )}
       </aside>
 
-      {/* ── Main ──────────────────────────────────────────────── */}
+      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
-        {/* Top Bar */}
         <div className="dl-topbar">
           <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/kurse/${kursId}`)}>
             <IconBack /> Zurück zum Kurs
@@ -235,8 +212,9 @@ export default function ModuleDetailPage() {
           {/* Header */}
           <div className="dl-page-header">
             <h1 className="dl-page-title">{module?.title}</h1>
-            {(module as any)?.description && (
-              <p className="dl-page-sub">{(module as any).description}</p>
+            {/* description ist in Module als optional definiert — kein any-Cast nötig */}
+            {module?.description && (
+              <p className="dl-page-sub">{module.description}</p>
             )}
           </div>
 
@@ -276,51 +254,41 @@ export default function ModuleDetailPage() {
 
             {lessons.length === 0 ? (
               <div className="dl-empty">
-                <div className="dl-empty-icon">📝</div>
+                <div className="dl-empty-icon">📋</div>
                 <p className="dl-empty-text">Noch keine Lektionen vorhanden.</p>
               </div>
             ) : (
-              <div className="dl-lesson-list">
+              <div className="dl-module-list">
                 {lessons.map((lesson, i) => {
-                  const isDone   = completedIds.has(lesson.id);
-                  const isNext   = lesson.id === nextLesson?.id;
-
+                  const isDone = completedIds.has(lesson.id);
                   return (
                     <div
                       key={lesson.id}
-                      className={`dl-lesson-item${isNext && !isDone ? " active" : ""}`}
+                      className="dl-module-item"
                       onClick={() => navigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
                       role="button"
                       tabIndex={0}
                       onKeyDown={(e) => e.key === "Enter" && navigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
                       aria-label={`Lektion ${i + 1}: ${lesson.title}`}
                     >
-                      {/* Status-Kreis */}
-                      <div
-                        className={`dl-lesson-check${isDone ? " dl-lesson-check--done" : ""}`}
-                        aria-hidden="true"
-                      >
-                        {isDone  && <IconCheck />}
-                        {!isDone && isNext && <IconPlay />}
+                      <div className={`dl-module-num${isDone ? " dl-module-num--done" : ""}`}>
+                        {isDone ? (
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        ) : i + 1}
                       </div>
-
-                      <span className="dl-lesson-title">
-                        <span style={{ color: "var(--dl-text-faint)", marginRight: 6, fontSize: 12 }}>
-                          {i + 1}.
-                        </span>
-                        {lesson.title}
-                      </span>
-
-                      {/* Badges */}
-                      {isDone && (
-                        <span className="dl-badge dl-badge--teal">Fertig</span>
-                      )}
-                      {isNext && !isDone && (
-                        <span className="dl-badge dl-badge--violet">Weiter</span>
-                      )}
-
-                      <span style={{ color: "var(--dl-text-faint)", marginLeft: 4 }}>
-                        <IconChevron />
+                      <div className="dl-module-info">
+                        <p className="dl-module-name">{lesson.title}</p>
+                        <p className="dl-module-sub">
+                          {lesson.duration > 0 ? `${lesson.duration} Min.` : ""}
+                          {isDone ? " · Abgeschlossen ✔" : ""}
+                        </p>
+                      </div>
+                      <span style={{ color: "var(--dl-text-faint)" }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <polyline points="9 18 15 12 9 6"/>
+                        </svg>
                       </span>
                     </div>
                   );

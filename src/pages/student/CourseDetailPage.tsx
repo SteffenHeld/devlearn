@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc, collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
-import { Course, Module } from "../../types";
 import { useThemeToggle } from "../../context/ThemeContext";
 import { useProgress } from "../../hooks/useProgress";
+import type { Course, Module, CourseProgress } from "../../types";
 
-/* ── Icons ────────────────────────────────────────────────────── */
+/* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
@@ -41,11 +41,10 @@ const bannerColor: Record<string, string> = {
   "HTML/CSS/JS": "--violet", "React/Vite/TS": "--teal", "Figma": "--amber", "Framer": "--coral",
 };
 const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐", "React/Vite/TS": "⚛️", "Figma": "🎨", "Framer": "🪄",
+  "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
 };
 
 export default function CourseDetailPage() {
-  // Gleicher Param-Name wie im Original: kursId
   const { kursId } = useParams<{ kursId: string }>();
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeToggle();
@@ -56,7 +55,6 @@ export default function CourseDetailPage() {
   const [modules, setModules] = useState<Module[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // Gleiche Firestore-Logik wie im Original
   useEffect(() => {
     if (!kursId) return;
 
@@ -82,13 +80,15 @@ export default function CourseDetailPage() {
     fetchData();
   }, [kursId]);
 
-  const p = progress?.[kursId ?? ""];
+  // Progress-Daten sauber typisiert — kein any mehr nötig
+  const p: CourseProgress | undefined = progress?.[kursId ?? ""];
   const completedModuleIds: string[] = p?.completedModules ?? [];
-  const totalLessons = modules.reduce((sum, m) => sum + ((m as any).lessonCount ?? 0), 0);
+  const totalLessons = modules.reduce((sum, m) => sum + (m.lessonCount ?? 0), 0);
   const doneLessons = p?.completed ?? 0;
   const pct = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
 
-  const cat = (course as any)?.category ?? "HTML/CSS/JS";
+  // category ist in Course als optional definiert — kein any-Cast nötig
+  const cat = course?.category ?? "HTML/CSS/JS";
   const variant = bannerColor[cat] ?? "--violet";
 
   if (loading) {
@@ -126,7 +126,7 @@ export default function CourseDetailPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Sidebar ───────────────────────────────────────────── */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
         <p className="dl-sidebar-section">Navigation</p>
@@ -145,7 +145,7 @@ export default function CourseDetailPage() {
             Alle Kurse
           </button>
           <div className="dl-sidebar-link active" style={{ cursor: "default" }}>
-            <span style={{ fontSize: 17 }}>{bannerEmoji[cat]}</span>
+            <span style={{ fontSize: 17 }}>{bannerEmoji[cat] ?? "📖"}</span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.title}</span>
           </div>
         </nav>
@@ -159,7 +159,6 @@ export default function CourseDetailPage() {
                 <button
                   key={mod.id}
                   className="dl-sidebar-link"
-                  // Gleicher Navigationspfad wie im Original: /kurse/:kursId/:moduleId
                   onClick={() => navigate(`/kurse/${kursId}/${mod.id}`)}
                   style={{ fontSize: 13 }}
                 >
@@ -177,7 +176,7 @@ export default function CourseDetailPage() {
         )}
       </aside>
 
-      {/* ── Main ──────────────────────────────────────────────── */}
+      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
           <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/kurse")}>
@@ -202,7 +201,7 @@ export default function CourseDetailPage() {
           <div className="dl-card" style={{ marginBottom: 32, padding: 0, overflow: "hidden" }}>
             <div className={`dl-course-banner dl-course-banner${variant}`}
               style={{ height: 100, gap: 16, padding: "0 28px" }}>
-              <span style={{ fontSize: 40 }}>{bannerEmoji[cat]}</span>
+              <span style={{ fontSize: 40 }}>{bannerEmoji[cat] ?? "📖"}</span>
               <div>
                 <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.5px", textTransform: "uppercase", color: "var(--dl-text-faint)", marginBottom: 4 }}>
                   {cat}
@@ -235,7 +234,7 @@ export default function CourseDetailPage() {
                 <div style={{ display: "flex", gap: 8 }}>
                   <span className="dl-badge dl-badge--gray">{modules.length} Module</span>
                   <span className="dl-badge dl-badge--gray">{totalLessons} Lektionen</span>
-                  {pct === 100 && <span className="dl-badge dl-badge--teal">Abgeschlossen ✓</span>}
+                  {pct === 100 && <span className="dl-badge dl-badge--teal">Abgeschlossen ✔</span>}
                 </div>
               </div>
             </div>
@@ -256,7 +255,8 @@ export default function CourseDetailPage() {
               <div className="dl-module-list">
                 {modules.map((mod, i) => {
                   const isDone = completedModuleIds.includes(mod.id);
-                  const modLessons = (mod as any).lessonCount ?? 0;
+                  const modLessons = mod.lessonCount ?? 0;
+                  // Sauber typisiert über CourseProgress.modules
                   const modDone = p?.modules?.[mod.id] ?? 0;
                   const modPct = modLessons > 0 ? Math.round((modDone / modLessons) * 100) : 0;
 
@@ -264,7 +264,6 @@ export default function CourseDetailPage() {
                     <div
                       key={mod.id}
                       className="dl-module-item"
-                      // Gleicher Pfad wie im Original
                       onClick={() => navigate(`/kurse/${kursId}/${mod.id}`)}
                       role="button"
                       tabIndex={0}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
+import type { Course, Module } from "../../types";
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -40,18 +41,18 @@ const IconMoon = () => (
 );
 
 const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐", "React/Vite/TS": "⚛️", "Figma": "🎨", "Framer": "🪄",
+  "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
 };
 
 export default function TeacherCourseDetailPage() {
-  const { kursId: courseId } = useParams<{ kursId: string }>();
+  const { kursId } = useParams<{ kursId: string }>();
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
-  const { courses, addModule, updateCourse } = useCourses() as any;
+  const { courses, addModule, updateCourse } = useCourses();
 
-  const course = courses.find((c: any) => c.id === courseId);
-  const modules: any[] = course?.modules ?? [];
+  const course = courses.find((c: Course) => c.id === kursId);
+  const modules: Module[] = course?.modules ?? [];
 
   const [showModuleForm, setShowModuleForm] = useState<boolean>(false);
   const [moduleTitle, setModuleTitle]       = useState<string>("");
@@ -71,7 +72,9 @@ export default function TeacherCourseDetailPage() {
           <div className="dl-empty">
             <div className="dl-empty-icon">🔍</div>
             <p className="dl-empty-text">Kurs nicht gefunden.</p>
-            <button className="dl-btn dl-btn--ghost" onClick={() => navigate("/teacher/kurse")}><IconBack /> Zurück</button>
+            <button className="dl-btn dl-btn--ghost" onClick={() => navigate("/teacher/kurse")}>
+              <IconBack /> Zurück
+            </button>
           </div>
         </div></main>
       </div>
@@ -83,17 +86,20 @@ export default function TeacherCourseDetailPage() {
     if (!moduleTitle.trim()) { setModuleError("Bitte einen Titel eingeben."); return; }
     setSavingModule(true); setModuleError("");
     try {
-      await addModule(courseId, { title: moduleTitle.trim(), description: moduleDesc.trim() });
+      await addModule(kursId!, { title: moduleTitle.trim(), description: moduleDesc.trim() });
       setModuleTitle(""); setModuleDesc(""); setShowModuleForm(false);
-    } catch { setModuleError("Fehler beim Erstellen."); }
-    finally { setSavingModule(false); }
+    } catch {
+      setModuleError("Fehler beim Erstellen.");
+    } finally {
+      setSavingModule(false);
+    }
   };
 
   const handleSaveCourse = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingCourse(true);
     try {
-      await updateCourse(courseId, { title: editTitle, description: editDesc });
+      await updateCourse(kursId!, { title: editTitle, description: editDesc });
       setEditMode(false);
     } catch { /* ignore */ }
     finally { setSavingCourse(false); }
@@ -104,32 +110,48 @@ export default function TeacherCourseDetailPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* Sidebar */}
+      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
       <aside className="dl-sidebar" aria-label="Navigation">
         <div className="dl-sidebar-logo">Dev<span>Learn</span></div>
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
             Dashboard
           </button>
           <button className="dl-sidebar-link" onClick={() => navigate("/teacher/kurse")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
             Kurse verwalten
           </button>
           <div className="dl-sidebar-link active" style={{ cursor: "default" }}>
-            <span style={{ fontSize: 17 }}>{bannerEmoji[cat]}</span>
+            <span style={{ fontSize: 17 }}>{bannerEmoji[cat] ?? "📖"}</span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.title}</span>
           </div>
         </nav>
+
         {modules.length > 0 && (
           <>
             <p className="dl-sidebar-section" style={{ marginTop: 16 }}>Module</p>
             <nav className="dl-sidebar-nav">
-              {modules.map((mod: any, i: number) => (
-                <button key={mod.id} className="dl-sidebar-link" style={{ fontSize: 13 }}
-                  onClick={() => navigate(`/teacher/kurse/${courseId}/modules/${mod.id}`)}>
-                  <span style={{ width: 20, height: 20, borderRadius: "50%", background: "var(--dl-violet-50)", color: "var(--dl-violet-600)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 600, flexShrink: 0 }}>{i + 1}</span>
+              {modules.map((mod: Module, i: number) => (
+                <button
+                  key={mod.id}
+                  className="dl-sidebar-link"
+                  style={{ fontSize: 13 }}
+                  // Korrekter Pfad: /teacher/kurse/:kursId/:modulId
+                  onClick={() => navigate(`/teacher/kurse/${kursId}/${mod.id}`)}
+                >
+                  <span style={{
+                    width: 20, height: 20, borderRadius: "50%",
+                    background: "var(--dl-violet-50)", color: "var(--dl-violet-600)",
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 11, fontWeight: 600, flexShrink: 0,
+                  }}>{i + 1}</span>
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{mod.title}</span>
                 </button>
               ))}
@@ -138,6 +160,7 @@ export default function TeacherCourseDetailPage() {
         )}
       </aside>
 
+      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
           <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/teacher/kurse")}>
@@ -166,21 +189,36 @@ export default function TeacherCourseDetailPage() {
               <form onSubmit={handleSaveCourse}>
                 <div className="dl-field">
                   <label htmlFor="edit-course-title">Kursname</label>
-                  <input id="edit-course-title" type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} required />
+                  <input
+                    id="edit-course-title"
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    required
+                  />
                 </div>
                 <div className="dl-field">
                   <label htmlFor="edit-course-desc">Beschreibung</label>
-                  <textarea id="edit-course-desc" value={editDesc} onChange={(e) => setEditDesc(e.target.value)} style={{ minHeight: 72 }} />
+                  <textarea
+                    id="edit-course-desc"
+                    value={editDesc}
+                    onChange={(e) => setEditDesc(e.target.value)}
+                    style={{ minHeight: 72 }}
+                  />
                 </div>
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => setEditMode(false)}>Abbrechen</button>
-                  <button type="submit" className="dl-btn dl-btn--primary" disabled={savingCourse}>{savingCourse ? "Speichert…" : "Speichern"}</button>
+                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => setEditMode(false)}>
+                    Abbrechen
+                  </button>
+                  <button type="submit" className="dl-btn dl-btn--primary" disabled={savingCourse}>
+                    {savingCourse ? "Speichert…" : "Speichern"}
+                  </button>
                 </div>
               </form>
             ) : (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <span style={{ fontSize: 36 }}>{bannerEmoji[cat]}</span>
+                  <span style={{ fontSize: 36 }}>{bannerEmoji[cat] ?? "📖"}</span>
                   <div>
                     <h1 className="dl-page-title" style={{ marginBottom: 4 }}>{course.title}</h1>
                     {course.description && <p className="dl-page-sub">{course.description}</p>}
@@ -191,32 +229,58 @@ export default function TeacherCourseDetailPage() {
                     </div>
                   </div>
                 </div>
-                <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => { setEditTitle(course.title); setEditDesc(course.description ?? ""); setEditMode(true); }}>
+                <button
+                  className="dl-btn dl-btn--ghost dl-btn--sm"
+                  onClick={() => {
+                    setEditTitle(course.title);
+                    setEditDesc(course.description ?? "");
+                    setEditMode(true);
+                  }}
+                >
                   <IconEdit /> Bearbeiten
                 </button>
               </div>
             )}
           </div>
 
-          {/* Neues Modul — Formular */}
+          {/* Neues Modul – Formular */}
           {showModuleForm && (
             <div className="dl-card" style={{ marginBottom: 20, borderColor: "var(--dl-violet-200)" }}>
-              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "var(--dl-text-primary)" }}>Neues Modul</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "var(--dl-text-primary)" }}>
+                Neues Modul
+              </h2>
               <form onSubmit={handleAddModule} noValidate>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
                   <div className="dl-field">
                     <label htmlFor="mod-title">Modulname</label>
-                    <input id="mod-title" type="text" placeholder="z.B. Grundlagen" value={moduleTitle} onChange={(e) => setModuleTitle(e.target.value)} required />
+                    <input
+                      id="mod-title"
+                      type="text"
+                      placeholder="z.B. Grundlagen"
+                      value={moduleTitle}
+                      onChange={(e) => setModuleTitle(e.target.value)}
+                      required
+                    />
                   </div>
                   <div className="dl-field">
                     <label htmlFor="mod-desc">Beschreibung (optional)</label>
-                    <input id="mod-desc" type="text" placeholder="Kurze Modulbeschreibung" value={moduleDesc} onChange={(e) => setModuleDesc(e.target.value)} />
+                    <input
+                      id="mod-desc"
+                      type="text"
+                      placeholder="Kurze Modulbeschreibung"
+                      value={moduleDesc}
+                      onChange={(e) => setModuleDesc(e.target.value)}
+                    />
                   </div>
                 </div>
                 {moduleError && <p className="dl-alert dl-alert--error">{moduleError}</p>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowModuleForm(false); setModuleError(""); }}>Abbrechen</button>
-                  <button type="submit" className="dl-btn dl-btn--primary" disabled={savingModule}>{savingModule ? "Erstellt…" : "Modul erstellen"}</button>
+                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowModuleForm(false); setModuleError(""); }}>
+                    Abbrechen
+                  </button>
+                  <button type="submit" className="dl-btn dl-btn--primary" disabled={savingModule}>
+                    {savingModule ? "Erstellt…" : "Modul erstellen"}
+                  </button>
                 </div>
               </form>
             </div>
@@ -237,22 +301,29 @@ export default function TeacherCourseDetailPage() {
               <div className="dl-empty">
                 <div className="dl-empty-icon">📦</div>
                 <p className="dl-empty-text">Noch keine Module. Füge das erste hinzu.</p>
-                <button className="dl-btn dl-btn--primary" onClick={() => setShowModuleForm(true)}><IconPlus /> Erstes Modul erstellen</button>
+                <button className="dl-btn dl-btn--primary" onClick={() => setShowModuleForm(true)}>
+                  <IconPlus /> Erstes Modul erstellen
+                </button>
               </div>
             ) : (
               <div className="dl-module-list">
-                {modules.map((mod: any, i: number) => (
+                {modules.map((mod: Module, i: number) => (
                   <div
                     key={mod.id}
                     className="dl-module-item"
-                    onClick={() => navigate(`/teacher/kurse/${courseId}/modules/${mod.id}`)}
-                    role="button" tabIndex={0}
-                    onKeyDown={(e) => e.key === "Enter" && navigate(`/teacher/kurse/${courseId}/modules/${mod.id}`)}
+                    // Korrekter Pfad: /teacher/kurse/:kursId/:modulId
+                    onClick={() => navigate(`/teacher/kurse/${kursId}/${mod.id}`)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => e.key === "Enter" && navigate(`/teacher/kurse/${kursId}/${mod.id}`)}
                   >
                     <div className="dl-module-num">{i + 1}</div>
                     <div className="dl-module-info">
                       <p className="dl-module-name">{mod.title}</p>
-                      <p className="dl-module-sub">{mod.lessonCount ?? 0} Lektionen{mod.description ? ` · ${mod.description}` : ""}</p>
+                      <p className="dl-module-sub">
+                        {mod.lessonCount ?? 0} Lektionen
+                        {mod.description ? ` · ${mod.description}` : ""}
+                      </p>
                     </div>
                     <span style={{ color: "var(--dl-text-faint)" }}><IconChevron /></span>
                   </div>

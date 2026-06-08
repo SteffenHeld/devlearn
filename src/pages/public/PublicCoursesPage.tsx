@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
 import "../../styles/LandingPage.css";
@@ -20,7 +20,7 @@ const bannerColor: Record<string, string> = {
   "HTML/CSS/JS": "--violet", "React/Vite/TS": "--teal", "Figma": "--amber", "Framer": "--coral",
 };
 const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐", "React/Vite/TS": "⚛️", "Figma": "🎨", "Framer": "🪄",
+  "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
 };
 
 export default function PublicCoursesPage() {
@@ -41,7 +41,7 @@ export default function PublicCoursesPage() {
   return (
     <div className={`dl-landing${darkMode ? " dl-dark" : ""}`} style={{ minHeight: "100vh" }}>
 
-      {/* Hintergrund — identisch zur LandingPage */}
+      {/* Hintergrund – identisch zur LandingPage */}
       <svg className="dl-diag-bg" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
         <polygon points="0,0 1440,0 720,900 0,900" className="dl-zone-purple" />
         <polygon points="720,900 1440,900 1440,200" className="dl-zone-teal" />
@@ -51,15 +51,13 @@ export default function PublicCoursesPage() {
         <circle cx="1320" cy="450" r="260" className="dl-deco-circle dl-deco-circle--right" />
       </svg>
 
-      {/* Header — identisch zur LandingPage */}
+      {/* Header */}
       <header className="dl-header">
-        <div className="dl-logo" style={{ cursor: "pointer" }} onClick={() => navigate("/")}>
-          Dev<span>Learn</span>
-        </div>
+        <Link to="/" className="dl-logo">Dev<span>Learn</span></Link>
         <nav className="dl-nav">
-          <a href="/#kurse">Kurse</a>
-          <a href="/#ueber-uns">Über uns</a>
-          <a href="/#preise">Preise</a>
+          <Link to="/kurse-entdecken">Kurse</Link>
+          <Link to="/ueber-uns">Über uns</Link>
+          <Link to="/preise">Preise</Link>
         </nav>
         <button
           className="dl-theme-toggle"
@@ -95,7 +93,7 @@ export default function PublicCoursesPage() {
             Alle Kurse auf einen Blick
           </h1>
           <p className="dl-hero-sub">
-            Von HTML-Grundlagen bis React — starte kostenlos und lerne in deinem Tempo.
+            Von HTML-Grundlagen bis React – starte kostenlos und lerne in deinem Tempo.
           </p>
         </div>
 
@@ -186,7 +184,7 @@ export default function PublicCoursesPage() {
                     (e.currentTarget as HTMLDivElement).style.transform = "";
                     (e.currentTarget as HTMLDivElement).style.boxShadow = "";
                   }}
-                  aria-label={`Kurs: ${course.title} — Klicke um dich zu registrieren`}
+                  aria-label={`Kurs: ${course.title} – Klicke um dich zu registrieren`}
                 >
                   {/* Banner */}
                   <div className={`dl-course-banner dl-course-banner${variant}`}
@@ -236,9 +234,9 @@ export default function PublicCoursesPage() {
             <button className="dl-btn-primary" onClick={() => navigate("/register")}>
               Jetzt kostenlos starten
             </button>
-            <button className="dl-btn-ghost" onClick={() => navigate("/")}>
+            <Link to="/" className="dl-btn-ghost">
               Zurück zur Startseite
-            </button>
+            </Link>
           </div>
         </div>
       </main>
