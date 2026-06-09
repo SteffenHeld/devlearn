@@ -9,14 +9,15 @@ import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
 
   // Login
   const [email, setEmail]       = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError]       = useState<string>("");
-  const [loading, setLoading]   = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [role, setRole] = useState<"student" | "teacher">("student");
 
   // Passwort vergessen
   const [showReset, setShowReset]       = useState<boolean>(false);
@@ -34,7 +35,7 @@ export default function LandingPage() {
       // Kurzer Delay damit onAuthStateChanged feuern kann
       // bevor React Router zur Dashboard-Route navigiert
       await new Promise((resolve) => setTimeout(resolve, 300));
-      navigate("/dashboard");
+      navigate(role === "teacher" ? "/teacher/dashboard" : "/dashboard");
     } catch {
       setError("E-Mail oder Passwort falsch.");
     } finally {
@@ -76,25 +77,7 @@ export default function LandingPage() {
           <Link to="/ueber-uns">Über uns</Link>
           <Link to="/preise">Preise</Link>
         </nav>
-        <button
-          className="dl-theme-toggle"
-          onClick={toggleTheme}
-          aria-label={darkMode ? "Light Mode aktivieren" : "Dark Mode aktivieren"}
-        >
-          {darkMode ? (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="5"/>
-              <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-              <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </svg>
-          ) : (
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-          )}
-        </button>
+        <ThemeToggleButton />
       </header>
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
@@ -132,6 +115,38 @@ export default function LandingPage() {
       {/* ── Login-Zone ──────────────────────────────────────────────────────── */}
       <div className="dl-login-zone">
         <div className="dl-login-card">
+          <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+            <button
+              type="button"
+              onClick={() => setRole("student")}
+              style={{
+                flex: 1, padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 600,
+                cursor: "pointer", fontFamily: "var(--dl-font)",
+                border: "1px solid",
+                borderColor: role === "student" ? "var(--dl-violet-400)" : "var(--dl-border)",
+                background: role === "student" ? "var(--dl-violet-400)" : "transparent",
+                color: role === "student" ? "#fff" : "var(--dl-text-muted)",
+                transition: "all 0.15s",
+              }}
+            >
+              👨‍🎓 Student
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole("teacher")}
+              style={{
+                flex: 1, padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 600,
+                cursor: "pointer", fontFamily: "var(--dl-font)",
+                border: "1px solid",
+                borderColor: role === "teacher" ? "var(--dl-teal-400)" : "var(--dl-border)",
+                background: role === "teacher" ? "var(--dl-teal-400)" : "transparent",
+                color: role === "teacher" ? "#fff" : "var(--dl-text-muted)",
+                transition: "all 0.15s",
+              }}
+            >
+              👨‍🏫 Lehrer
+            </button>
+          </div>
 
           {/* ── Passwort-Reset-Ansicht ───────────────────────────────────── */}
           {showReset ? (
@@ -244,7 +259,14 @@ export default function LandingPage() {
                   />
                 </div>
                 {error && <p className="dl-error">{error}</p>}
-                <button type="submit" className="dl-login-btn" disabled={loading}>
+                  <button
+                    type="submit"
+                    className="dl-login-btn"
+                    disabled={loading}
+                    style={{
+                      background: role === "teacher" ? "var(--dl-teal-400)" : "var(--dl-violet-400)",
+                    }}
+                  >
                   {loading ? "Wird eingeloggt…" : "Einloggen"}
                 </button>
               </form>
