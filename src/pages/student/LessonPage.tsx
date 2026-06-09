@@ -8,6 +8,7 @@ import { useThemeToggle } from "../../context/ThemeContext";
 import type { Lesson } from "../../types";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
 import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
+import PageBreadcrumb from "../../components/ui/PageBreadcrumb"; 
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
@@ -162,15 +163,12 @@ export default function LessonPage() {
 
         <div className="dl-page">
           {/* Breadcrumb */}
-          <nav className="dl-breadcrumb" aria-label="Breadcrumb">
-            <span role="button" onClick={() => navigate("/kurse")}>Kurse</span>
-            <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
-            <span role="button" onClick={() => navigate(`/kurse/${kursId}`)}>Kurs</span>
-            <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
-            <span role="button" onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}>Modul</span>
-            <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
-            <span className="dl-breadcrumb-current">{lesson?.title}</span>
-          </nav>
+          <PageBreadcrumb items={[
+            { label: "Kurse",  onClick: () => navigate("/kurse") },
+            { label: "Kurs",   onClick: () => navigate(`/kurse/${kursId}`) },
+            { label: "Modul",  onClick: () => navigate(`/kurse/${kursId}/${modulId}`) },
+            { label: lesson?.title ?? "Lektion" },
+          ]} />
 
           {/* Zweispaltiges Layout */}
           <div className="dl-lesson-layout">

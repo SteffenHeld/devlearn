@@ -8,6 +8,7 @@ import type { Course, Module, CourseProgress } from "../../types";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
 import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 import ProgressBar from "../../components/ui/ProgressBar";
+import PageBreadcrumb from "../../components/ui/PageBreadcrumb";
 
 // Module mit geladenen Lektions-IDs — nur IDs nötig für Fortschrittsberechnung
 interface ModuleWithLessonIds extends Module {
@@ -196,11 +197,10 @@ export default function CourseDetailPage() {
 
         <div className="dl-page">
           {/* Breadcrumb */}
-          <nav className="dl-breadcrumb" aria-label="Breadcrumb">
-            <span role="button" onClick={() => navigate("/kurse")}>Kurse</span>
-            <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
-            <span className="dl-breadcrumb-current">{course.title}</span>
-          </nav>
+          <PageBreadcrumb items={[
+            { label: "Kurse", onClick: () => navigate("/kurse") },
+            { label: course.title },
+          ]} />
 
           {/* Kurs-Hero */}
           <div className="dl-card" style={{ marginBottom: 32, padding: 0, overflow: "hidden" }}>

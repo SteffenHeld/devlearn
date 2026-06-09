@@ -8,6 +8,7 @@ import type { Module, Lesson } from "../../types";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
 import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 import ProgressBar from "../../components/ui/ProgressBar";
+import PageBreadcrumb from "../../components/ui/PageBreadcrumb";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
@@ -188,13 +189,11 @@ export default function ModuleDetailPage() {
 
         <div className="dl-page">
           {/* Breadcrumb */}
-          <nav className="dl-breadcrumb" aria-label="Breadcrumb">
-            <span role="button" onClick={() => navigate("/kurse")}>Kurse</span>
-            <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
-            <span role="button" onClick={() => navigate(`/kurse/${kursId}`)}>Kurs</span>
-            <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
-            <span className="dl-breadcrumb-current">{module?.title}</span>
-          </nav>
+          <PageBreadcrumb items={[
+              { label: "Kurse", onClick: () => navigate("/kurse") },
+              { label: "Kurs",  onClick: () => navigate(`/kurse/${kursId}`) },
+              { label: module?.title ?? "Modul" },
+            ]} />
 
           {/* Header */}
           <div className="dl-page-header">
