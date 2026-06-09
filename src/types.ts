@@ -53,6 +53,7 @@ export interface ModuleProgress {
 
 export interface CourseProgress {
   completed: number;
+  completedLessons: string[];
   completedModules: string[];
   modules: ModuleProgress;
 }

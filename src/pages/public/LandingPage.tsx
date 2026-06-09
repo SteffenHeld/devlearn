@@ -35,7 +35,7 @@ export default function LandingPage() {
       // Kurzer Delay damit onAuthStateChanged feuern kann
       // bevor React Router zur Dashboard-Route navigiert
       await new Promise((resolve) => setTimeout(resolve, 300));
-      navigate(role === "teacher" ? "/teacher/dashboard" : "/dashboard");
+      navigate("/dashboard");
     } catch {
       setError("E-Mail oder Passwort falsch.");
     } finally {
