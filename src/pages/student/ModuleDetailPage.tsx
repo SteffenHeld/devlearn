@@ -7,6 +7,7 @@ import { useProgress } from "../../hooks/useProgress";
 import type { Module, Lesson } from "../../types";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
 import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
+import ProgressBar from "../../components/ui/ProgressBar";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
@@ -208,16 +209,7 @@ export default function ModuleDetailPage() {
           <div className="dl-card" style={{ marginBottom: 32, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 180 }}>
               <p style={{ fontSize: 12, color: "var(--dl-text-faint)", marginBottom: 8 }}>Modulfortschritt</p>
-              <div className="dl-progress" style={{ marginBottom: 6 }}>
-                <div
-                  className={`dl-progress-fill dl-progress-fill${pct === 100 ? "--teal" : "--violet"}`}
-                  style={{ width: `${pct}%` }}
-                  role="progressbar"
-                  aria-valuenow={pct}
-                  aria-valuemin={0}
-                  aria-valuemax={100}
-                />
-              </div>
+              <ProgressBar pct={pct} isDone={pct === 100} />
               <p className="dl-progress-label">{done} von {total} Lektionen abgeschlossen</p>
             </div>
             <div style={{ display: "flex", gap: 12 }}>

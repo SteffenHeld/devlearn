@@ -7,6 +7,7 @@ import { useProgress } from "../../hooks/useProgress";
 import type { Course, Module, CourseProgress } from "../../types";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
 import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
+import ProgressBar from "../../components/ui/ProgressBar";
 
 // Module mit geladenen Lektions-IDs — nur IDs nötig für Fortschrittsberechnung
 interface ModuleWithLessonIds extends Module {
@@ -223,17 +224,7 @@ export default function CourseDetailPage() {
               )}
               <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
                 <div style={{ flex: 1, minWidth: 160 }}>
-                  <div className="dl-progress" style={{ marginBottom: 6 }}>
-                    <div
-                      className={`dl-progress-fill dl-progress-fill${pct === 100 ? "--teal" : "--violet"}`}
-                      style={{ width: `${pct}%` }}
-                      role="progressbar"
-                      aria-valuenow={pct}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                    />
-                  </div>
-                  <p className="dl-progress-label">{pct}% abgeschlossen</p>
+                  <ProgressBar pct={pct} showLabel isDone={pct === 100} />
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
                   <span className="dl-badge dl-badge--gray">{modules.length} Module</span>
@@ -285,12 +276,7 @@ export default function CourseDetailPage() {
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                         {modLessons > 0 && (
-                          <div className="dl-progress" style={{ width: 80, marginBottom: 0 }}>
-                            <div
-                              className={`dl-progress-fill dl-progress-fill${isDone ? "--teal" : "--violet"}`}
-                              style={{ width: `${modPct}%` }}
-                            />
-                          </div>
+                          <ProgressBar pct={modPct} width={80} isDone={isDone} />
                         )}
                         <span style={{ color: "var(--dl-text-faint)" }}><IconChevron /></span>
                       </div>
