@@ -20,8 +20,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (firebaseUser) {
         const docRef = doc(db, "users", firebaseUser.uid);
         const docSnap = await getDoc(docRef);
-        setRole(docSnap.exists() ? (docSnap.data().role as Role) : null);
+        const fetchedRole = docSnap.exists() ? (docSnap.data().role as Role) : null;
+
         setUser(firebaseUser);
+        setRole(fetchedRole);
       } else {
         setUser(null);
         setRole(null);
@@ -34,7 +36,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider value={{ user, role, loading }}>
-      {!loading && children}
+      {loading ? (
+        <div style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh"
+        }}>
+          Laden…
+        </div>
+      ) : (
+        children
+      )}
     </AuthContext.Provider>
   );
 }
