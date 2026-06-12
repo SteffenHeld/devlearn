@@ -282,12 +282,42 @@ body {
     font-size: 17px;
     font-weight: 600;
     color: var(--dl-text-primary);
+    flex: 1;
 }
 
 .dl-topbar-actions {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+/* ── Hamburger Button (standardmäßig versteckt, nur Mobile sichtbar) */
+.dl-topbar-menu-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--dl-text-primary);
+    padding: 4px;
+    margin-right: 8px;
+    border-radius: 6px;
+    line-height: 0;
+    flex-shrink: 0;
+}
+
+.dl-topbar-menu-btn:hover {
+    background: var(--dl-bg-muted);
+}
+
+/* ── Sidebar Overlay (Mobile) ─────────────────────────────────── */
+.dl-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 99;
 }
 
 /* ── Page Content ─────────────────────────────────────────────── */
@@ -1124,72 +1154,7 @@ body {
     margin-bottom: 20px;
 }
 
-/* ── Responsive ───────────────────────────────────────────────── */
-@media (max-width: 900px) {
-    .dl-lesson-layout {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .dl-page {
-        padding: 24px;
-    }
-
-    .dl-topbar {
-        padding: 16px 24px;
-    }
-
-    .dl-stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    .dl-contact-grid {
-        grid-template-columns: 1fr !important;
-    }
-
-    .dl-courses-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .dl-form-card {
-        max-width: 100%;
-        padding: 28px 24px;
-    }
-
-   .dl-topbar-menu-btn {
-       display: none;
-       background: none;
-       border: none;
-       cursor: pointer;
-       color: var(--dl-text-primary);
-       /* ← korrekt */
-       padding: 4px;
-       margin-right: 8px;
-       border-radius: 6px;
-       line-height: 0;
-   }
-
-    .dl-sidebar-overlay {
-        display: block;
-    }
-
-    .dl-sidebar {
-        position: fixed;
-        left: -260px;
-        top: 0;
-        height: 100vh;
-        z-index: 100;
-        transition: left 0.25s ease;
-        display: flex;
-    }
-
-    .dl-sidebar--open {
-        left: 0;
-    }
-}
-
-/* ── Register Page Layout ─────────────────────────────────────── */
+/* ── Auth Page Layout ─────────────────────────────────────────── */
 .dl-auth-page {
     min-height: 100vh;
     display: flex;
@@ -1231,26 +1196,68 @@ body {
     color: var(--dl-violet-400);
 }
 
-/* Hamburger Button im Topbar */
-.dl-topbar-menu-btn {
-    display: none;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--dl-text);
-    padding: 4px;
-    margin-right: 8px;
-    border-radius: 6px;
-    line-height: 0;
+/* ════════════════════════════════════════════════════════════════
+   RESPONSIVE
+   Alle Media Queries gesammelt am Ende — NUR EIN BLOCK pro Breakpoint
+   ════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 900px) {
+    .dl-lesson-layout {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* Overlay hinter der Sidebar */
-.dl-sidebar-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 99;
-}
+@media (max-width: 768px) {
 
-/* Mobile Breakpoint */
+    /* Layout */
+    .dl-page {
+        padding: 24px;
+    }
+
+    .dl-topbar {
+        padding: 16px 24px;
+    }
+
+    /* Sidebar: per default versteckt via left-offset, nicht display:none */
+    .dl-sidebar {
+        position: fixed;
+        left: -260px;
+        top: 0;
+        height: 100vh;
+        z-index: 100;
+        display: flex;
+        transition: left 0.25s ease;
+    }
+
+    .dl-sidebar--open {
+        left: 0;
+    }
+
+    /* Overlay sichtbar wenn Sidebar offen */
+    .dl-sidebar-overlay {
+        display: block;
+    }
+
+    /* Hamburger-Button sichtbar */
+    .dl-topbar-menu-btn {
+        display: flex;
+    }
+
+    /* Grid-Anpassungen */
+    .dl-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dl-courses-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dl-contact-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    .dl-form-card {
+        max-width: 100%;
+        padding: 28px 24px;
+    }
+}
