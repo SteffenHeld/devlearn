@@ -154,7 +154,14 @@ export default function TeacherDashboard() {
           <button className="dl-sidebar-link" disabled style={{ opacity: 0.4, cursor: "not-allowed" }}>
             <IconUsers /> Schüler
           </button>
+
+          {/* Trennlinie + Abmelden direkt in der Nav */}
+          <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
+          <button className="dl-sidebar-link" onClick={handleLogout} style={{ color: "var(--dl-coral-400)" }}>
+            <IconLogout /> Abmelden
+          </button>
         </nav>
+        
         <div className="dl-sidebar-footer">
           <button className="dl-sidebar-link" onClick={handleLogout} style={{ color: "var(--dl-coral-400)" }}>
             <IconLogout /> Abmelden
