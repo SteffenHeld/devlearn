@@ -1157,11 +1157,18 @@ body {
         padding: 28px 24px;
     }
 
-    .dl-topbar-menu-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+   .dl-topbar-menu-btn {
+       display: none;
+       background: none;
+       border: none;
+       cursor: pointer;
+       color: var(--dl-text-primary);
+       /* ← korrekt */
+       padding: 4px;
+       margin-right: 8px;
+       border-radius: 6px;
+       line-height: 0;
+   }
 
     .dl-sidebar-overlay {
         display: block;
