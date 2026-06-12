@@ -16,6 +16,19 @@ const IconBack = () => (
     <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
   </svg>
 );
+const IconMenu = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+const IconClose = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
 
 const bannerEmoji: Record<string, string> = {
   "HTML/CSS/JS": "🌐", "React/Vite/TS": "⚛️", "Figma": "🎨", "Framer": "🪄",
@@ -27,6 +40,7 @@ export default function TeacherModuleDetailPage() {
   const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { courses, addLesson } = useCourses();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const course = courses.find((c: Course) => c.id === kursId);
   const mod = course?.modules?.find((m: Module) => m.id === modulId);
@@ -38,6 +52,11 @@ export default function TeacherModuleDetailPage() {
   const [lessonDuration, setLessonDuration] = useState<string>("");
   const [savingLesson, setSavingLesson]     = useState<boolean>(false);
   const [lessonError, setLessonError]       = useState<string>("");
+
+  const handleNavigate = (path: string) => {
+    setSidebarOpen(false);
+    navigate(path);
+  };
 
   if (!course || !mod) {
     return (
@@ -63,7 +82,6 @@ export default function TeacherModuleDetailPage() {
       await addLesson(kursId!, modulId!, {
         title: lessonTitle.trim(),
         content: lessonContent.trim(),
-        // duration ist number in types.ts — 0 statt null wenn leer
         duration: lessonDuration ? parseInt(lessonDuration) : 0,
       });
       setLessonTitle(""); setLessonContent(""); setLessonDuration("");
@@ -81,18 +99,27 @@ export default function TeacherModuleDetailPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
+      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="dl-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className="dl-sidebar" aria-label="Navigation">
+      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
         <DevLearnLogo />
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => navigate("/teacher/kurse")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/teacher/kurse")}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
             Kurse
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate(`/teacher/kurse/${kursId}`)}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate(`/teacher/kurse/${kursId}`)}>
             <span style={{ fontSize: 17 }}>{bannerEmoji[cat] ?? "📖"}</span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.title}</span>
           </button>
@@ -126,9 +153,14 @@ export default function TeacherModuleDetailPage() {
       {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/teacher/kurse/${kursId}`)}>
-            <IconBack /> {course.title}
+          <button
+            className="dl-topbar-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Menü öffnen"
+          >
+            {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
+          <span className="dl-topbar-title">{mod.title}</span>
           <div className="dl-topbar-actions">
             <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => setShowLessonForm(true)}>
               <IconPlus /> Neue Lektion
@@ -139,9 +171,9 @@ export default function TeacherModuleDetailPage() {
 
         <div className="dl-page">
           <nav className="dl-breadcrumb" aria-label="Breadcrumb">
-            <span role="button" onClick={() => navigate("/teacher/kurse")}>Kurse</span>
+            <span role="button" onClick={() => handleNavigate("/teacher/kurse")}>Kurse</span>
             <span className="dl-breadcrumb-sep">/</span>
-            <span role="button" onClick={() => navigate(`/teacher/kurse/${kursId}`)}>{course.title}</span>
+            <span role="button" onClick={() => handleNavigate(`/teacher/kurse/${kursId}`)}>{course.title}</span>
             <span className="dl-breadcrumb-sep">/</span>
             <span className="dl-breadcrumb-current">{mod.title}</span>
           </nav>
@@ -158,53 +190,27 @@ export default function TeacherModuleDetailPage() {
             </div>
           </div>
 
-          {/* Neue Lektion — Formular */}
           {showLessonForm && (
             <div className="dl-card" style={{ marginBottom: 24, borderColor: "var(--dl-violet-200)" }}>
-              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "var(--dl-text-primary)" }}>
-                Neue Lektion
-              </h2>
+              <h2 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16, color: "var(--dl-text-primary)" }}>Neue Lektion</h2>
               <form onSubmit={handleAddLesson} noValidate>
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "0 16px" }}>
                   <div className="dl-field">
                     <label htmlFor="lesson-title">Lektionstitel</label>
-                    <input
-                      id="lesson-title"
-                      type="text"
-                      placeholder="z.B. Was ist HTML?"
-                      value={lessonTitle}
-                      onChange={(e) => setLessonTitle(e.target.value)}
-                      required
-                    />
+                    <input id="lesson-title" type="text" placeholder="z.B. Was ist HTML?" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} required />
                   </div>
                   <div className="dl-field">
                     <label htmlFor="lesson-duration">Dauer (Min.)</label>
-                    <input
-                      id="lesson-duration"
-                      type="number"
-                      min="1"
-                      max="120"
-                      placeholder="10"
-                      value={lessonDuration}
-                      onChange={(e) => setLessonDuration(e.target.value)}
-                    />
+                    <input id="lesson-duration" type="number" min="1" max="120" placeholder="10" value={lessonDuration} onChange={(e) => setLessonDuration(e.target.value)} />
                   </div>
                 </div>
                 <div className="dl-field">
                   <label htmlFor="lesson-content">Inhalt (HTML oder Markdown)</label>
-                  <textarea
-                    id="lesson-content"
-                    placeholder="<h2>Einführung</h2><p>In dieser Lektion lernst du…</p>"
-                    value={lessonContent}
-                    onChange={(e) => setLessonContent(e.target.value)}
-                    style={{ minHeight: 140, fontFamily: "'Fira Code', monospace", fontSize: 13 }}
-                  />
+                  <textarea id="lesson-content" placeholder="<h2>Einführung</h2><p>In dieser Lektion lernst du…</p>" value={lessonContent} onChange={(e) => setLessonContent(e.target.value)} style={{ minHeight: 140, fontFamily: "'Fira Code', monospace", fontSize: 13 }} />
                 </div>
                 {lessonError && <p className="dl-alert dl-alert--error">{lessonError}</p>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowLessonForm(false); setLessonError(""); }}>
-                    Abbrechen
-                  </button>
+                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowLessonForm(false); setLessonError(""); }}>Abbrechen</button>
                   <button type="submit" className="dl-btn dl-btn--primary" disabled={savingLesson}>
                     {savingLesson ? "Erstellt…" : "Lektion erstellen"}
                   </button>
@@ -213,7 +219,6 @@ export default function TeacherModuleDetailPage() {
             </div>
           )}
 
-          {/* Lektionsliste */}
           <div className="dl-section">
             <div className="dl-section-header">
               <h2 className="dl-section-title">Lektionen ({lessons.length})</h2>
@@ -223,7 +228,6 @@ export default function TeacherModuleDetailPage() {
                 </button>
               )}
             </div>
-
             {lessons.length === 0 && !showLessonForm ? (
               <div className="dl-empty">
                 <div className="dl-empty-icon">📝</div>
@@ -249,10 +253,7 @@ export default function TeacherModuleDetailPage() {
                         <td style={{ color: "var(--dl-text-faint)", fontSize: 13 }}>{i + 1}</td>
                         <td style={{ fontWeight: 500 }}>{lesson.title}</td>
                         <td style={{ color: "var(--dl-text-muted)" }}>
-                          {lesson.duration > 0
-                            ? `${lesson.duration} Min.`
-                            : <span style={{ color: "var(--dl-text-faint)" }}>–</span>
-                          }
+                          {lesson.duration > 0 ? `${lesson.duration} Min.` : <span style={{ color: "var(--dl-text-faint)" }}>–</span>}
                         </td>
                         <td>
                           {lesson.content

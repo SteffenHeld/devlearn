@@ -8,7 +8,7 @@ import { useThemeToggle } from "../../context/ThemeContext";
 import type { Lesson } from "../../types";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
 import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
-import PageBreadcrumb from "../../components/ui/PageBreadcrumb"; 
+import PageBreadcrumb from "../../components/ui/PageBreadcrumb";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
@@ -32,6 +32,19 @@ const IconCheck = () => (
     <polyline points="20 6 9 17 4 12"/>
   </svg>
 );
+const IconMenu = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+const IconClose = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
 
 export default function LessonPage() {
   const { kursId, modulId, lektionId } = useParams<{
@@ -43,17 +56,19 @@ export default function LessonPage() {
   const navigate = useNavigate();
   const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
-
-  // markLessonComplete aus useProgress — schreibt korrekt nach users/{uid}/progress/{courseId}
   const { progress, markLessonComplete } = useProgress();
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [lesson, setLesson]   = useState<Lesson | null>(null);
   const [saving, setSaving]   = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const handleNavigate = (path: string) => {
+    setSidebarOpen(false);
+    navigate(path);
+  };
+
   useEffect(() => {
     if (!kursId || !modulId || !lektionId || !user) return;
-
     async function fetchLesson(): Promise<void> {
       const lessonSnap = await getDoc(
         doc(db, "courses", kursId!, "modules", modulId!, "lessons", lektionId!)
@@ -63,20 +78,15 @@ export default function LessonPage() {
       }
       setLoading(false);
     }
-
     fetchLesson();
   }, [kursId, modulId, lektionId, user]);
 
-  // Abschluss-Status aus useProgress lesen — wird automatisch aktualisiert
-  // wenn markLessonComplete aufgerufen wird (Echtzeit-Listener in useProgress)
   const completed =
     progress[kursId ?? ""]?.completedLessons?.includes(lektionId ?? "") ?? false;
 
   async function handleComplete(): Promise<void> {
     if (!kursId || !modulId || !lektionId || saving) return;
     setSaving(true);
-    // markLessonComplete schreibt korrekt nach users/{uid}/progress/{courseId}
-    // und zählt completed, completedLessons und modules[moduleId] hoch
     await markLessonComplete(kursId, modulId, lektionId);
     setSaving(false);
   }
@@ -98,31 +108,40 @@ export default function LessonPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
+      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="dl-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className="dl-sidebar" aria-label="Navigation">
+      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
         <DevLearnLogo />
         <p className="dl-sidebar-section">Navigation</p>
         <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/dashboard")}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
               <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
             </svg>
             Dashboard
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate("/kurse")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/kurse")}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
             Alle Kurse
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate(`/kurse/${kursId}`)}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate(`/kurse/${kursId}`)}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
             Zum Kurs
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}`)}>
             <span style={{
               width: 20, height: 20, borderRadius: "50%",
               background: "var(--dl-violet-50)", color: "var(--dl-violet-600)",
@@ -153,24 +172,27 @@ export default function LessonPage() {
       {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}>
-            <IconBack /> Zurück zum Modul
+          <button
+            className="dl-topbar-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Menü öffnen"
+          >
+            {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
+          <span className="dl-topbar-title">{lesson?.title ?? "Lektion"}</span>
           <div className="dl-topbar-actions">
             <ThemeToggleButton />
           </div>
         </div>
 
         <div className="dl-page">
-          {/* Breadcrumb */}
           <PageBreadcrumb items={[
-            { label: "Kurse",  onClick: () => navigate("/kurse") },
-            { label: "Kurs",   onClick: () => navigate(`/kurse/${kursId}`) },
-            { label: "Modul",  onClick: () => navigate(`/kurse/${kursId}/${modulId}`) },
+            { label: "Kurse",  onClick: () => handleNavigate("/kurse") },
+            { label: "Kurs",   onClick: () => handleNavigate(`/kurse/${kursId}`) },
+            { label: "Modul",  onClick: () => handleNavigate(`/kurse/${kursId}/${modulId}`) },
             { label: lesson?.title ?? "Lektion" },
           ]} />
 
-          {/* Zweispaltiges Layout */}
           <div className="dl-lesson-layout">
 
             {/* ── Linke Spalte: Inhalt ─────────────────────────────────────── */}
@@ -186,7 +208,6 @@ export default function LessonPage() {
 
               <div className="dl-divider" style={{ marginTop: 16 }} />
 
-              {/* Lektion-Inhalt */}
               <div className="dl-lesson-content">
                 {lesson?.content ? (
                   lesson.content.trim().startsWith("<")
@@ -202,7 +223,6 @@ export default function LessonPage() {
 
               <div className="dl-divider" />
 
-              {/* Aktions-Buttons */}
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 {!completed && (
                   <button
@@ -218,7 +238,7 @@ export default function LessonPage() {
                 {completed && (
                   <button
                     className="dl-btn dl-btn--ghost"
-                    onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}
+                    onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}`)}
                     style={{ padding: "12px 24px" }}
                   >
                     <IconNext /> Weiter zum Modul
@@ -270,14 +290,14 @@ export default function LessonPage() {
                   <button
                     className="dl-btn dl-btn--ghost"
                     style={{ justifyContent: "flex-start", fontSize: 13 }}
-                    onClick={() => navigate(`/kurse/${kursId}/${modulId}`)}
+                    onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}`)}
                   >
                     <IconBack /> Zurück zum Modul
                   </button>
                   <button
                     className="dl-btn dl-btn--ghost"
                     style={{ justifyContent: "flex-start", fontSize: 13 }}
-                    onClick={() => navigate(`/kurse/${kursId}`)}
+                    onClick={() => handleNavigate(`/kurse/${kursId}`)}
                   >
                     <IconBack /> Zurück zum Kurs
                   </button>
@@ -296,7 +316,6 @@ export default function LessonPage() {
                 )}
               </div>
             </aside>
-
           </div>
         </div>
       </main>

@@ -11,14 +11,22 @@ import ProgressBar from "../../components/ui/ProgressBar";
 import PageBreadcrumb from "../../components/ui/PageBreadcrumb";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
-const IconBack = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-  </svg>
-);
 const IconPlay = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
     <polygon points="5 3 19 12 5 21 5 3"/>
+  </svg>
+);
+const IconMenu = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+const IconClose = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
 
@@ -27,51 +35,37 @@ export default function ModuleDetailPage() {
   const navigate = useNavigate();
   const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
-
-  // useProgress liefert completedLessons aus users/{uid}/progress/{courseId}
-  // — kein eigener Firestore-Read pro Lektion nötig
   const { progress } = useProgress();
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [module, setModule]   = useState<Module | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const handleNavigate = (path: string) => {
+    setSidebarOpen(false);
+    navigate(path);
+  };
+
   useEffect(() => {
     if (!kursId || !modulId) return;
-
     async function fetchData(): Promise<void> {
-      // Modul laden
-      const moduleSnap = await getDoc(
-        doc(db, "courses", kursId!, "modules", modulId!)
-      );
+      const moduleSnap = await getDoc(doc(db, "courses", kursId!, "modules", modulId!));
       if (moduleSnap.exists()) {
         setModule({ id: moduleSnap.id, ...(moduleSnap.data() as Omit<Module, "id">) });
       }
-
-      // Lektionen laden
       const lessonsQuery = query(
         collection(db, "courses", kursId!, "modules", modulId!, "lessons"),
         orderBy("order")
       );
       const lessonsSnap = await getDocs(lessonsQuery);
-      setLessons(
-        lessonsSnap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<Lesson, "id">),
-        }))
-      );
-
+      setLessons(lessonsSnap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Lesson, "id">) })));
       setLoading(false);
     }
-
     fetchData();
   }, [kursId, modulId]);
 
-  // Abgeschlossene Lektionen aus useProgress lesen — reaktiv, kein eigener Read
-  const completedLessons: string[] =
-    progress[kursId ?? ""]?.completedLessons ?? [];
+  const completedLessons: string[] = progress[kursId ?? ""]?.completedLessons ?? [];
   const completedIds = new Set(completedLessons);
-
   const done  = lessons.filter((l) => completedIds.has(l.id)).length;
   const total = lessons.length;
   const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
@@ -94,25 +88,34 @@ export default function ModuleDetailPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
+      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="dl-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className="dl-sidebar" aria-label="Navigation">
+      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
         <DevLearnLogo />
         <p className="dl-sidebar-section">Navigation</p>
         <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/dashboard")}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
               <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
             </svg>
             Dashboard
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate("/kurse")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/kurse")}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
             Alle Kurse
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate(`/kurse/${kursId}`)}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate(`/kurse/${kursId}`)}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
@@ -131,7 +134,6 @@ export default function ModuleDetailPage() {
           </div>
         </nav>
 
-        {/* Lektionen in Sidebar */}
         {lessons.length > 0 && (
           <>
             <p className="dl-sidebar-section" style={{ marginTop: 16 }}>Lektionen</p>
@@ -142,7 +144,7 @@ export default function ModuleDetailPage() {
                   <button
                     key={lesson.id}
                     className="dl-sidebar-link"
-                    onClick={() => navigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
+                    onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
                     style={{ fontSize: 13, gap: 8 }}
                   >
                     <span style={{
@@ -170,14 +172,19 @@ export default function ModuleDetailPage() {
       {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate(`/kurse/${kursId}`)}>
-            <IconBack /> Zurück zum Kurs
+          <button
+            className="dl-topbar-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Menü öffnen"
+          >
+            {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
+          <span className="dl-topbar-title">{module?.title ?? "Modul"}</span>
           <div className="dl-topbar-actions">
             {nextLesson && (
               <button
                 className="dl-btn dl-btn--primary dl-btn--sm"
-                onClick={() => navigate(`/kurse/${kursId}/${modulId}/${nextLesson.id}`)}
+                onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}/${nextLesson.id}`)}
               >
                 <IconPlay />
                 {done === 0 ? "Starten" : "Weiterlernen"}
@@ -188,23 +195,19 @@ export default function ModuleDetailPage() {
         </div>
 
         <div className="dl-page">
-          {/* Breadcrumb */}
           <PageBreadcrumb items={[
-              { label: "Kurse", onClick: () => navigate("/kurse") },
-              { label: "Kurs",  onClick: () => navigate(`/kurse/${kursId}`) },
-              { label: module?.title ?? "Modul" },
-            ]} />
+            { label: "Kurse", onClick: () => handleNavigate("/kurse") },
+            { label: "Kurs",  onClick: () => handleNavigate(`/kurse/${kursId}`) },
+            { label: module?.title ?? "Modul" },
+          ]} />
 
-          {/* Header */}
           <div className="dl-page-header">
             <h1 className="dl-page-title">{module?.title}</h1>
-            {/* description ist in Module als optional definiert — kein any-Cast nötig */}
             {module?.description && (
               <p className="dl-page-sub">{module.description}</p>
             )}
           </div>
 
-          {/* Fortschritts-Card */}
           <div className="dl-card" style={{ marginBottom: 32, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
             <div style={{ flex: 1, minWidth: 180 }}>
               <p style={{ fontSize: 12, color: "var(--dl-text-faint)", marginBottom: 8 }}>Modulfortschritt</p>
@@ -223,12 +226,10 @@ export default function ModuleDetailPage() {
             </div>
           </div>
 
-          {/* Lektionsliste */}
           <div className="dl-section">
             <div className="dl-section-header">
               <h2 className="dl-section-title">Lektionen</h2>
             </div>
-
             {lessons.length === 0 ? (
               <div className="dl-empty">
                 <div className="dl-empty-icon">📋</div>
@@ -242,10 +243,10 @@ export default function ModuleDetailPage() {
                     <div
                       key={lesson.id}
                       className="dl-module-item"
-                      onClick={() => navigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
+                      onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={(e) => e.key === "Enter" && navigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
+                      onKeyDown={(e) => e.key === "Enter" && handleNavigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
                       aria-label={`Lektion ${i + 1}: ${lesson.title}`}
                     >
                       <div className={`dl-module-num${isDone ? " dl-module-num--done" : ""}`}>

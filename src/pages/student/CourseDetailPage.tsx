@@ -10,7 +10,6 @@ import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 import ProgressBar from "../../components/ui/ProgressBar";
 import PageBreadcrumb from "../../components/ui/PageBreadcrumb";
 
-// Module mit geladenen Lektions-IDs — nur IDs nötig für Fortschrittsberechnung
 interface ModuleWithLessonIds extends Module {
   lessonIds: string[];
 }
@@ -31,6 +30,19 @@ const IconCheck = () => (
     <polyline points="20 6 9 17 4 12"/>
   </svg>
 );
+const IconMenu = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+const IconClose = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
 
 const bannerColor: Record<string, string> = {
   "HTML/CSS/JS": "--violet", "React/Vite/TS": "--teal", "Figma": "--amber", "Framer": "--coral",
@@ -45,30 +57,29 @@ export default function CourseDetailPage() {
   const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { progress } = useProgress();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [course, setCourse] = useState<Course | null>(null);
   const [modules, setModules] = useState<ModuleWithLessonIds[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  const handleNavigate = (path: string) => {
+    setSidebarOpen(false);
+    navigate(path);
+  };
+
   useEffect(() => {
     if (!kursId) return;
-
     async function fetchData(): Promise<void> {
-      // Kurs laden
       const courseSnap = await getDoc(doc(db, "courses", kursId!));
       if (courseSnap.exists()) {
         setCourse({ id: courseSnap.id, ...(courseSnap.data() as Omit<Course, "id">) });
       }
-
-      // Module laden
       const modulesQuery = query(
         collection(db, "courses", kursId!, "modules"),
         orderBy("order")
       );
       const modulesSnap = await getDocs(modulesQuery);
-
-      // Für jedes Modul auch die Lektions-IDs laden
-      // — nötig um Modul-Abschluss aus completedLessons zu berechnen
       const modulesWithIds: ModuleWithLessonIds[] = await Promise.all(
         modulesSnap.docs.map(async (d) => {
           const lessonsSnap = await getDocs(
@@ -81,22 +92,17 @@ export default function CourseDetailPage() {
           };
         })
       );
-
       setModules(modulesWithIds);
       setLoading(false);
     }
-
     fetchData();
   }, [kursId]);
 
-  // Progress-Daten aus useProgress — reaktiv über Echtzeit-Listener
   const p: CourseProgress | undefined = progress[kursId ?? ""];
   const completedLessons: string[] = p?.completedLessons ?? [];
-
   const totalLessons = modules.reduce((sum, m) => sum + m.lessonIds.length, 0);
   const doneLessons  = completedLessons.length;
   const pct = totalLessons > 0 ? Math.round((doneLessons / totalLessons) * 100) : 0;
-
   const cat     = course?.category ?? "HTML/CSS/JS";
   const variant = bannerColor[cat] ?? "--violet";
 
@@ -135,19 +141,28 @@ export default function CourseDetailPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
+      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="dl-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className="dl-sidebar" aria-label="Navigation">
+      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
         <DevLearnLogo />
         <p className="dl-sidebar-section">Navigation</p>
         <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/dashboard")}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
               <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
             </svg>
             Dashboard
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate("/kurse")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/kurse")}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
             </svg>
@@ -167,7 +182,7 @@ export default function CourseDetailPage() {
                 <button
                   key={mod.id}
                   className="dl-sidebar-link"
-                  onClick={() => navigate(`/kurse/${kursId}/${mod.id}`)}
+                  onClick={() => handleNavigate(`/kurse/${kursId}/${mod.id}`)}
                   style={{ fontSize: 13 }}
                 >
                   <span style={{
@@ -187,18 +202,22 @@ export default function CourseDetailPage() {
       {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/kurse")}>
-            <IconBack /> Kurse
+          <button
+            className="dl-topbar-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Menü öffnen"
+          >
+            {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
+          <span className="dl-topbar-title">{course.title}</span>
           <div className="dl-topbar-actions">
             <ThemeToggleButton />
           </div>
         </div>
 
         <div className="dl-page">
-          {/* Breadcrumb */}
           <PageBreadcrumb items={[
-            { label: "Kurse", onClick: () => navigate("/kurse") },
+            { label: "Kurse", onClick: () => handleNavigate("/kurse") },
             { label: course.title },
           ]} />
 
@@ -240,7 +259,6 @@ export default function CourseDetailPage() {
             <div className="dl-section-header">
               <h2 className="dl-section-title">Module</h2>
             </div>
-
             {modules.length === 0 ? (
               <div className="dl-empty">
                 <div className="dl-empty-icon">📦</div>
@@ -249,20 +267,18 @@ export default function CourseDetailPage() {
             ) : (
               <div className="dl-module-list">
                 {modules.map((mod, i) => {
-                  const modLessons   = mod.lessonIds.length;
-                  const modDone      = mod.lessonIds.filter((id) => completedLessons.includes(id)).length;
-                  const modPct       = modLessons > 0 ? Math.round((modDone / modLessons) * 100) : 0;
-                  // Modul gilt als abgeschlossen wenn alle Lektionen in completedLessons sind
-                  const isDone       = modLessons > 0 && modDone === modLessons;
-
+                  const modLessons = mod.lessonIds.length;
+                  const modDone    = mod.lessonIds.filter((id) => completedLessons.includes(id)).length;
+                  const modPct     = modLessons > 0 ? Math.round((modDone / modLessons) * 100) : 0;
+                  const isDone     = modLessons > 0 && modDone === modLessons;
                   return (
                     <div
                       key={mod.id}
                       className="dl-module-item"
-                      onClick={() => navigate(`/kurse/${kursId}/${mod.id}`)}
+                      onClick={() => handleNavigate(`/kurse/${kursId}/${mod.id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={(e) => e.key === "Enter" && navigate(`/kurse/${kursId}/${mod.id}`)}
+                      onKeyDown={(e) => e.key === "Enter" && handleNavigate(`/kurse/${kursId}/${mod.id}`)}
                       aria-label={`Modul ${i + 1}: ${mod.title}`}
                     >
                       <div className={`dl-module-num${isDone ? " dl-module-num--done" : ""}`}>
@@ -270,14 +286,10 @@ export default function CourseDetailPage() {
                       </div>
                       <div className="dl-module-info">
                         <p className="dl-module-name">{mod.title}</p>
-                        <p className="dl-module-sub">
-                          {modLessons} Lektionen · {modPct}% abgeschlossen
-                        </p>
+                        <p className="dl-module-sub">{modLessons} Lektionen · {modPct}% abgeschlossen</p>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        {modLessons > 0 && (
-                          <ProgressBar pct={modPct} width={80} isDone={isDone} />
-                        )}
+                        {modLessons > 0 && <ProgressBar pct={modPct} width={80} isDone={isDone} />}
                         <span style={{ color: "var(--dl-text-faint)" }}><IconChevron /></span>
                       </div>
                     </div>

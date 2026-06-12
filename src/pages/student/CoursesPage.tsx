@@ -14,9 +14,29 @@ const IconSearch = () => (
     <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
   </svg>
 );
-const IconBack = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+const IconDashboard = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+  </svg>
+);
+const IconBook = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+  </svg>
+);
+
+const IconMenu = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+const IconClose = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
 
@@ -28,11 +48,18 @@ export default function CoursesPage() {
   const darkMode = mode === "dark";
   const { courses, loading, error } = useCourses();
   const { progress } = useProgress();
-  // role kommt direkt aus useAuth — kein (user as any).role nötig
-  const { role } = useAuth();
-
+  const { role, user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [search, setSearch] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState<string>("Alle");
+
+  const handleNavigate = (path: string) => {
+    setSidebarOpen(false);
+    navigate(path);
+  };
+
+  const initials = (user?.displayName ?? "S")
+    .split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
 
   const filtered = courses.filter((c) => {
     const matchSearch = c.title.toLowerCase().includes(search.toLowerCase());
@@ -43,37 +70,52 @@ export default function CoursesPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
+      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="dl-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className="dl-sidebar" aria-label="Navigation">
+      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
         <DevLearnLogo />
         <p className="dl-sidebar-section">Menü</p>
         <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-            </svg>
-            Dashboard
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/dashboard")}>
+            <IconDashboard /> Dashboard
           </button>
           <button className="dl-sidebar-link active" aria-current="page">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-            Kurse
+            <IconBook /> Kurse
           </button>
         </nav>
+        <div className="dl-sidebar-footer">
+          <div className="dl-sidebar-user">
+            <div className="dl-avatar">{initials}</div>
+            <div>
+              <div className="dl-sidebar-user-name">{user?.displayName ?? "Student"}</div>
+              <div className="dl-sidebar-user-role">Student</div>
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/dashboard")}>
-            <IconBack /> Dashboard
+          <button
+            className="dl-topbar-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Menü öffnen"
+          >
+            {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
+          <span className="dl-topbar-title">Alle Kurse</span>
           <div className="dl-topbar-actions">
-            {/* Teacher-Button nur anzeigen wenn Rolle wirklich "teacher" ist */}
             {role === "teacher" && (
-              <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => navigate("/teacher/kurse")}>
+              <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => handleNavigate("/teacher/kurse")}>
                 + Kurs verwalten
               </button>
             )}
@@ -142,7 +184,6 @@ export default function CoursesPage() {
           )}
           {error && <p className="dl-alert dl-alert--error">{error}</p>}
 
-          {/* Kurs-Grid */}
           {!loading && filtered.length === 0 && (
             <div className="dl-empty">
               <div className="dl-empty-icon">🔍</div>
@@ -153,12 +194,12 @@ export default function CoursesPage() {
           {!loading && filtered.length > 0 && (
             <div className="dl-courses-grid">
               {filtered.map((course) => (
-              <CourseCard
-                key={course.id}
-                course={course}
-                progress={progress[course.id]}
-              />
-            ))}
+                <CourseCard
+                  key={course.id}
+                  course={course}
+                  progress={progress[course.id]}
+                />
+              ))}
             </div>
           )}
         </div>

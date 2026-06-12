@@ -22,9 +22,17 @@ const IconEye = () => (
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
   </svg>
 );
-const IconBack = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+const IconMenu = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+const IconClose = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
 
@@ -38,6 +46,7 @@ export default function TeacherCoursesPage() {
   const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { courses, addCourse } = useCourses();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [showForm, setShowForm]       = useState<boolean>(false);
   const [title, setTitle]             = useState<string>("");
@@ -45,6 +54,11 @@ export default function TeacherCoursesPage() {
   const [description, setDescription] = useState<string>("");
   const [saving, setSaving]           = useState<boolean>(false);
   const [error, setError]             = useState<string>("");
+
+  const handleNavigate = (path: string) => {
+    setSidebarOpen(false);
+    navigate(path);
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,12 +79,21 @@ export default function TeacherCoursesPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
+      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="dl-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className="dl-sidebar" aria-label="Navigation">
+      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
         <DevLearnLogo />
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => navigate("/dashboard")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/teacher/dashboard")}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
               <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
@@ -89,9 +112,14 @@ export default function TeacherCoursesPage() {
       {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/dashboard")}>
-            <IconBack /> Dashboard
+          <button
+            className="dl-topbar-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Menü öffnen"
+          >
+            {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
+          <span className="dl-topbar-title">Kurse verwalten</span>
           <div className="dl-topbar-actions">
             <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => setShowForm(true)}>
               <IconPlus /> Neuer Kurs
@@ -106,7 +134,6 @@ export default function TeacherCoursesPage() {
             <p className="dl-page-sub">Erstelle und bearbeite deine Kurse, Module und Lektionen.</p>
           </div>
 
-          {/* Neuer Kurs – Inline-Formular */}
           {showForm && (
             <div className="dl-card" style={{ marginBottom: 28, borderColor: "var(--dl-violet-200)" }}>
               <h2 style={{ fontSize: 16, fontWeight: 600, color: "var(--dl-text-primary)", marginBottom: 20 }}>
@@ -116,39 +143,22 @@ export default function TeacherCoursesPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
                   <div className="dl-field">
                     <label htmlFor="tc-title">Kursname</label>
-                    <input
-                      id="tc-title"
-                      type="text"
-                      placeholder="z.B. HTML & CSS Grundlagen"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      required
-                    />
+                    <input id="tc-title" type="text" placeholder="z.B. HTML & CSS Grundlagen" value={title} onChange={(e) => setTitle(e.target.value)} required />
                   </div>
                   <div className="dl-field">
                     <label htmlFor="tc-category">Kategorie</label>
                     <select id="tc-category" value={category} onChange={(e) => setCategory(e.target.value)}>
-                      {CATEGORIES.map((c) => (
-                        <option key={c} value={c}>{c}</option>
-                      ))}
+                      {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
                     </select>
                   </div>
                 </div>
                 <div className="dl-field">
                   <label htmlFor="tc-desc">Beschreibung (optional)</label>
-                  <textarea
-                    id="tc-desc"
-                    placeholder="Kurze Beschreibung des Kurses…"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    style={{ minHeight: 72 }}
-                  />
+                  <textarea id="tc-desc" placeholder="Kurze Beschreibung des Kurses…" value={description} onChange={(e) => setDescription(e.target.value)} style={{ minHeight: 72 }} />
                 </div>
                 {error && <p className="dl-alert dl-alert--error">{error}</p>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowForm(false); setError(""); }}>
-                    Abbrechen
-                  </button>
+                  <button type="button" className="dl-btn dl-btn--ghost" onClick={() => { setShowForm(false); setError(""); }}>Abbrechen</button>
                   <button type="submit" className="dl-btn dl-btn--primary" disabled={saving}>
                     {saving ? "Wird erstellt…" : "Kurs erstellen"}
                   </button>
@@ -157,7 +167,6 @@ export default function TeacherCoursesPage() {
             </div>
           )}
 
-          {/* Kursliste */}
           {courses.length === 0 && !showForm ? (
             <div className="dl-empty">
               <div className="dl-empty-icon">📚</div>
@@ -194,18 +203,10 @@ export default function TeacherCoursesPage() {
                         <td style={{ color: "var(--dl-text-muted)" }}>{course.modules?.reduce((s, m) => s + (m.lessons?.length ?? 0), 0) ?? 0}</td>
                         <td>
                           <div style={{ display: "flex", gap: 6 }}>
-                            <button
-                              className="dl-btn dl-btn--subtle dl-btn--sm"
-                              onClick={() => navigate(`/teacher/kurse/${course.id}`)}
-                            >
+                            <button className="dl-btn dl-btn--subtle dl-btn--sm" onClick={() => handleNavigate(`/teacher/kurse/${course.id}`)}>
                               <IconEdit /> Bearbeiten
                             </button>
-                            {/* Studentenansicht — korrekter deutscher Pfad */}
-                            <button
-                              className="dl-btn dl-btn--ghost dl-btn--sm"
-                              onClick={() => navigate(`/kurse/${course.id}`)}
-                              title="Studentenansicht"
-                            >
+                            <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => handleNavigate(`/kurse/${course.id}`)} title="Studentenansicht">
                               <IconEye />
                             </button>
                           </div>
