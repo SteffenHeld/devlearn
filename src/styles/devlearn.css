@@ -1224,10 +1224,13 @@ body {
         left: -260px;
         top: 0;
         height: 100vh;
+        max-height: 100vh;
         z-index: 100;
         display: flex;
-        transition: left 0.25s ease;
+        flex-direction: column;
         overflow-y: auto;
+        overflow-x: hidden;
+        transition: left 0.25s ease;
     }
 
     .dl-sidebar--open {
