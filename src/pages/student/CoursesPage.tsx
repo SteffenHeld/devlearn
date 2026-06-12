@@ -5,7 +5,6 @@ import { useAuth } from "../../context/AuthContext";
 import useCourses from "../../hooks/useCourses";
 import { useProgress } from "../../hooks/useProgress";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
-import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 import CourseCard from "../../components/ui/CourseCard";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
@@ -39,16 +38,30 @@ const IconClose = () => (
     <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
+const IconSun = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+const IconMoon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+);
 
 const CATEGORIES = ["Alle", "HTML/CSS/JS", "React/Vite/TS", "Figma", "Framer"];
 
 export default function CoursesPage() {
   const navigate = useNavigate();
-  const { mode } = useThemeToggle();
+  const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
   const { courses, loading, error } = useCourses();
   const { progress } = useProgress();
-  const { role, user } = useAuth();
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [search, setSearch] = useState<string>("");
   const [activeCategory, setActiveCategory] = useState<string>("Alle");
@@ -90,6 +103,11 @@ export default function CoursesPage() {
           <button className="dl-sidebar-link active" aria-current="page">
             <IconBook /> Kurse
           </button>
+          <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
+          <button className="dl-sidebar-link" onClick={toggleTheme}>
+            {mode === "dark" ? <IconSun /> : <IconMoon />}
+            {mode === "dark" ? "Light Mode" : "Dark Mode"}
+          </button>
         </nav>
         <div className="dl-sidebar-footer">
           <div className="dl-sidebar-user">
@@ -113,14 +131,6 @@ export default function CoursesPage() {
             {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
           <span className="dl-topbar-title">Alle Kurse</span>
-          <div className="dl-topbar-actions">
-            {role === "teacher" && (
-              <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => handleNavigate("/teacher/kurse")}>
-                + Kurs verwalten
-              </button>
-            )}
-            <ThemeToggleButton />
-          </div>
         </div>
 
         <div className="dl-page">

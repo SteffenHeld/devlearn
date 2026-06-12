@@ -4,7 +4,6 @@ import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
 import type { Course, Module } from "../../types";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
-import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -40,6 +39,20 @@ const IconClose = () => (
     <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
+const IconSun = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+const IconMoon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+);
 
 const bannerEmoji: Record<string, string> = {
   "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
@@ -48,7 +61,7 @@ const bannerEmoji: Record<string, string> = {
 export default function TeacherCourseDetailPage() {
   const { kursId } = useParams<{ kursId: string }>();
   const navigate = useNavigate();
-  const { mode } = useThemeToggle();
+  const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
   const { courses, addModule, updateCourse } = useCourses();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -148,6 +161,11 @@ export default function TeacherCourseDetailPage() {
             <span style={{ fontSize: 17 }}>{bannerEmoji[cat] ?? "📖"}</span>
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.title}</span>
           </div>
+           <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
+            <button className="dl-sidebar-link" onClick={toggleTheme}>
+              {mode === "dark" ? <IconSun /> : <IconMoon />}
+              {mode === "dark" ? "Light Mode" : "Dark Mode"}
+            </button>
         </nav>
 
         {modules.length > 0 && (
@@ -186,12 +204,6 @@ export default function TeacherCourseDetailPage() {
             {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
           <span className="dl-topbar-title">{course.title}</span>
-          <div className="dl-topbar-actions">
-            <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => setShowModuleForm(true)}>
-              <IconPlus /> Neues Modul
-            </button>
-            <ThemeToggleButton />
-          </div>
         </div>
 
         <div className="dl-page">

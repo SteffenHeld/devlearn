@@ -7,7 +7,6 @@ import useCourses from "../../hooks/useCourses";
 import type { Course } from "../../types";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
 import { useThemeToggle } from "../../context/ThemeContext";
-import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
 /* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconDashboard = () => (
@@ -58,6 +57,21 @@ const IconMenu = () => (
   </svg>
 );
 
+const IconSun = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="5"/>
+    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+  </svg>
+);
+const IconMoon = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+  </svg>
+);
+
 const bannerEmoji: Record<string, string> = {
   "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
 };
@@ -66,7 +80,7 @@ type Tab = "courses" | "students";
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
-  const { mode } = useThemeToggle();
+  const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Korrekter Import aus context/AuthContext
@@ -157,15 +171,16 @@ export default function TeacherDashboard() {
 
           {/* Trennlinie + Abmelden direkt in der Nav */}
           <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
+          <button className="dl-sidebar-link" onClick={toggleTheme}>
+            {mode === "dark" ? <IconSun /> : <IconMoon />}
+            {mode === "dark" ? "Light Mode" : "Dark Mode"}
+          </button>
           <button className="dl-sidebar-link" onClick={handleLogout} style={{ color: "var(--dl-coral-400)" }}>
             <IconLogout /> Abmelden
           </button>
         </nav>
         
         <div className="dl-sidebar-footer">
-          <button className="dl-sidebar-link" onClick={handleLogout} style={{ color: "var(--dl-coral-400)" }}>
-            <IconLogout /> Abmelden
-          </button>
           <div className="dl-sidebar-user" style={{ marginTop: 8 }}>
             <div className="dl-avatar">{initials}</div>
             <div>
@@ -190,7 +205,6 @@ export default function TeacherDashboard() {
             <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => setShowForm(true)}>
               <IconPlus /> Neuer Kurs
             </button>
-            <ThemeToggleButton />
           </div>
         </div>
 
