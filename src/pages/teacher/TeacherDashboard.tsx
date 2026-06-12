@@ -50,6 +50,14 @@ const IconX = () => (
   </svg>
 );
 
+const IconMenu = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+
 const bannerEmoji: Record<string, string> = {
   "HTML/CSS/JS": "🌐", "Figma": "🎨", "Framer": "🪄",
 };
@@ -60,6 +68,7 @@ export default function TeacherDashboard() {
   const navigate = useNavigate();
   const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   // Korrekter Import aus context/AuthContext
   const { user } = useAuth();
   const { courses, addCourse } = useCourses();
@@ -73,8 +82,14 @@ export default function TeacherDashboard() {
   const [formError, setFormError]     = useState("");
 
   const handleLogout = async () => {
-    navigate("/");
-    await signOut(auth);
+  setSidebarOpen(false);
+  navigate("/");
+  await signOut(auth);
+  };
+
+  const handleNavigate = (path: string) => {
+  setSidebarOpen(false);
+  navigate(path);
   };
 
   const handleCreateCourse = async (e: React.FormEvent) => {
@@ -114,15 +129,25 @@ export default function TeacherDashboard() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
+      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="dl-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className="dl-sidebar" aria-label="Navigation">
+      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
         <DevLearnLogo />
         <p className="dl-sidebar-section">Lehrer-Panel</p>
         <nav className="dl-sidebar-nav">
           <button className="dl-sidebar-link active" aria-current="page">
             <IconDashboard /> Dashboard
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate("/teacher/kurse")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/teacher/kurse")}>
             <IconBook /> Kurse verwalten
           </button>
           {/* Schüler-Verwaltung noch nicht implementiert — deaktiviert */}
@@ -144,10 +169,16 @@ export default function TeacherDashboard() {
         </div>
       </aside>
 
-      {/* ── Hauptbereich ─────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <span className="dl-topbar-title">Lehrer-Dashboard</span>
+            <button
+              className="dl-topbar-menu-btn"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              aria-label="Menü öffnen"
+            >
+              {sidebarOpen ? <IconX /> : <IconMenu />}
+            </button>
+            <span className="dl-topbar-title">Lehrer-Dashboard</span>
           <div className="dl-topbar-actions">
             <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => setShowForm(true)}>
               <IconPlus /> Neuer Kurs

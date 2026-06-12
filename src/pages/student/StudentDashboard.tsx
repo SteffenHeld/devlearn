@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
@@ -33,7 +34,19 @@ const IconLogout = () => (
     <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
   </svg>
 );
-
+const IconMenu = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="3" y1="6" x2="21" y2="6"/>
+    <line x1="3" y1="12" x2="21" y2="12"/>
+    <line x1="3" y1="18" x2="21" y2="18"/>
+  </svg>
+);
+const IconClose = () => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <line x1="18" y1="6" x2="6" y2="18"/>
+    <line x1="6" y1="6" x2="18" y2="18"/>
+  </svg>
+);
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
@@ -42,10 +55,17 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const { courses } = useCourses();
   const { progress } = useProgress();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
+    setSidebarOpen(false);
     navigate("/");
     await signOut(auth);
+  };
+
+  const handleNavigate = (path: string) => {
+    setSidebarOpen(false);
+    navigate(path);
   };
 
   const firstName = user?.displayName?.split(" ")[0] ?? "Student";
@@ -80,8 +100,20 @@ export default function StudentDashboard() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
+      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
+      {sidebarOpen && (
+        <div
+          className="dl-sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className="dl-sidebar" aria-label="Navigation">
+      <aside
+        className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`}
+        aria-label="Navigation"
+      >
         <DevLearnLogo />
 
         <p className="dl-sidebar-section">Menü</p>
@@ -89,10 +121,9 @@ export default function StudentDashboard() {
           <button className="dl-sidebar-link active" aria-current="page">
             <IconDashboard /> Dashboard
           </button>
-          <button className="dl-sidebar-link" onClick={() => navigate("/kurse")}>
+          <button className="dl-sidebar-link" onClick={() => handleNavigate("/kurse")}>
             <IconBook /> Kurse
           </button>
-          {/* Zertifikate noch nicht implementiert — deaktiviert */}
           <button className="dl-sidebar-link" disabled style={{ opacity: 0.4, cursor: "not-allowed" }}>
             <IconAward /> Zertifikate
           </button>
@@ -115,6 +146,15 @@ export default function StudentDashboard() {
       {/* ── Hauptbereich ─────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
+          {/* Hamburger (nur Mobile) */}
+          <button
+            className="dl-topbar-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Menü öffnen"
+          >
+            {sidebarOpen ? <IconClose /> : <IconMenu />}
+          </button>
+
           <span className="dl-topbar-title">Übersicht</span>
           <div className="dl-topbar-actions">
             <ThemeToggleButton />
@@ -156,7 +196,7 @@ export default function StudentDashboard() {
           <div className="dl-section">
             <div className="dl-section-header">
               <h2 className="dl-section-title">Deine Kurse</h2>
-              <span className="dl-section-link" onClick={() => navigate("/kurse")}>
+              <span className="dl-section-link" onClick={() => handleNavigate("/kurse")}>
                 Alle ansehen →
               </span>
             </div>
@@ -165,19 +205,19 @@ export default function StudentDashboard() {
               <div className="dl-empty">
                 <div className="dl-empty-icon">📚</div>
                 <p className="dl-empty-text">Noch keine Kurse verfügbar.</p>
-                <button className="dl-btn dl-btn--primary" onClick={() => navigate("/kurse")}>
+                <button className="dl-btn dl-btn--primary" onClick={() => handleNavigate("/kurse")}>
                   Kurse entdecken
                 </button>
               </div>
             ) : (
               <div className="dl-courses-grid">
                 {courses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  progress={progress[course.id]}
-                />
-              ))}
+                  <CourseCard
+                    key={course.id}
+                    course={course}
+                    progress={progress[course.id]}
+                  />
+                ))}
               </div>
             )}
           </div>
