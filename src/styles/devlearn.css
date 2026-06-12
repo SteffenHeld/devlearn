@@ -1264,4 +1264,9 @@ body {
         max-width: 100%;
         padding: 28px 24px;
     }
+
+    .dl-table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
 }
