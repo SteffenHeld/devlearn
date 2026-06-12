@@ -1227,6 +1227,7 @@ body {
         z-index: 100;
         display: flex;
         transition: left 0.25s ease;
+        overflow-y: auto;
     }
 
     .dl-sidebar--open {
