@@ -1,8 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
    DevLearn — Globales Design-System
-   Importiere diese Datei einmal in main.tsx:
-     import "./devlearn.css";
-   Die LandingPage.css bleibt separat (dl-* Klassen).
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── Google Font ────────────────────────────────────────────── */
@@ -10,7 +7,6 @@
 
 /* ── Design Tokens ──────────────────────────────────────────── */
 :root {
-    /* Primär: Violet */
     --dl-violet-50: #EEEDFE;
     --dl-violet-100: #CECBF6;
     --dl-violet-200: #AFA9EC;
@@ -19,7 +15,6 @@
     --dl-violet-800: #3C3489;
     --dl-violet-900: #26215C;
 
-    /* Akzent: Teal */
     --dl-teal-50: #E1F5EE;
     --dl-teal-100: #9FE1CB;
     --dl-teal-200: #5DCAA5;
@@ -28,18 +23,15 @@
     --dl-teal-800: #085041;
     --dl-teal-900: #04342C;
 
-    /* Warn: Amber */
     --dl-amber-50: #FAEEDA;
     --dl-amber-400: #EF9F27;
     --dl-amber-600: #BA7517;
     --dl-amber-800: #854F0B;
 
-    /* Fehler: Coral */
     --dl-coral-50: #FAECE7;
     --dl-coral-400: #D85A30;
     --dl-coral-600: #993C1D;
 
-    /* Grau */
     --dl-gray-50: #F7F6FD;
     --dl-gray-100: #EEECFB;
     --dl-gray-200: #D8D6F0;
@@ -48,7 +40,7 @@
     --dl-gray-800: #2E2B50;
     --dl-gray-900: #1a1830;
 
-    /* Semantisch (Light) */
+    /* Semantisch (Light / Student) */
     --dl-bg: #F0EFFE;
     --dl-bg-surface: #FFFFFF;
     --dl-bg-muted: #F7F6FD;
@@ -61,18 +53,16 @@
     --dl-shadow-sm: 0 2px 8px rgba(83, 74, 183, 0.08);
     --dl-shadow-md: 0 4px 20px rgba(83, 74, 183, 0.12);
 
-    /* Layout */
     --dl-radius-sm: 8px;
     --dl-radius-md: 12px;
     --dl-radius-lg: 16px;
     --dl-radius-xl: 24px;
 
-    /* Typografie */
     --dl-font: 'DM Sans', 'Segoe UI', sans-serif;
 }
 
-/* ── Dark Mode Tokens ────────────────────────────────────────── */
-.dl-dark {
+/* ── Dark Mode (global auf body) ─────────────────────────────── */
+body.dl-dark {
     --dl-bg: #12111e;
     --dl-bg-surface: #1a1830;
     --dl-bg-muted: #16152a;
@@ -84,6 +74,23 @@
     --dl-border-hover: rgba(127, 119, 221, 0.3);
     --dl-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
     --dl-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Teacher-Hintergrund (auf body) ──────────────────────────── */
+body.dl-teacher {
+    --dl-bg: #F0FBF7;
+    --dl-bg-muted: #F5FDF9;
+    --dl-border: rgba(29, 158, 117, 0.18);
+    --dl-border-hover: rgba(29, 158, 117, 0.38);
+    --dl-shadow-sm: 0 2px 8px rgba(15, 110, 86, 0.08);
+    --dl-shadow-md: 0 4px 20px rgba(15, 110, 86, 0.12);
+}
+
+body.dl-dark.dl-teacher {
+    --dl-bg: #0e1e18;
+    --dl-bg-muted: #0a1810;
+    --dl-border: rgba(29, 158, 117, 0.14);
+    --dl-border-hover: rgba(29, 158, 117, 0.3);
 }
 
 /* ── Reset & Base ────────────────────────────────────────────── */
@@ -99,7 +106,7 @@ body {
     font-family: var(--dl-font);
     background: var(--dl-bg);
     color: var(--dl-text-primary);
-    transition: background 0.3s, color 0.3s;
+    transition: background 0.4s, color 0.3s;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -107,7 +114,6 @@ body {
    LAYOUT
    ════════════════════════════════════════════════════════════════ */
 
-/* App Shell: Sidebar + Content */
 .dl-shell {
     display: flex;
     min-height: 100vh;
@@ -169,13 +175,13 @@ body {
     color: var(--dl-text-muted);
     padding: 9px 12px;
     border-radius: var(--dl-radius-sm);
-    text-decoration: none;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
     border: none;
     background: transparent;
     width: 100%;
     text-align: left;
+    text-decoration: none;
 }
 
 .dl-sidebar-link svg {
@@ -188,7 +194,7 @@ body {
     color: var(--dl-violet-600);
 }
 
-.dl-dark .dl-sidebar-link:hover {
+body.dl-dark .dl-sidebar-link:hover {
     background: rgba(127, 119, 221, 0.12);
     color: var(--dl-violet-200);
 }
@@ -199,7 +205,7 @@ body {
     font-weight: 600;
 }
 
-.dl-dark .dl-sidebar-link.active {
+body.dl-dark .dl-sidebar-link.active {
     background: rgba(127, 119, 221, 0.15);
     color: var(--dl-violet-200);
 }
@@ -237,7 +243,7 @@ body {
     flex-shrink: 0;
 }
 
-.dl-dark .dl-avatar {
+body.dl-dark .dl-avatar {
     background: rgba(127, 119, 221, 0.15);
     border-color: var(--dl-violet-800);
     color: var(--dl-violet-200);
@@ -291,7 +297,6 @@ body {
     gap: 8px;
 }
 
-/* ── Hamburger Button (standardmäßig versteckt, nur Mobile sichtbar) */
 .dl-topbar-menu-btn {
     display: none;
     align-items: center;
@@ -311,7 +316,6 @@ body {
     background: var(--dl-bg-muted);
 }
 
-/* ── Sidebar Overlay (Mobile) ─────────────────────────────────── */
 .dl-sidebar-overlay {
     display: none;
     position: fixed;
@@ -469,19 +473,19 @@ body {
     background: #FAECE7;
 }
 
-.dl-dark .dl-course-banner--violet {
+body.dl-dark .dl-course-banner--violet {
     background: rgba(127, 119, 221, 0.12);
 }
 
-.dl-dark .dl-course-banner--teal {
+body.dl-dark .dl-course-banner--teal {
     background: rgba(29, 158, 117, 0.12);
 }
 
-.dl-dark .dl-course-banner--amber {
+body.dl-dark .dl-course-banner--amber {
     background: rgba(239, 159, 39, 0.10);
 }
 
-.dl-dark .dl-course-banner--coral {
+body.dl-dark .dl-course-banner--coral {
     background: rgba(216, 90, 48, 0.10);
 }
 
@@ -517,7 +521,7 @@ body {
     margin-bottom: 6px;
 }
 
-.dl-dark .dl-progress {
+body.dl-dark .dl-progress {
     background: var(--dl-gray-800);
 }
 
@@ -544,7 +548,7 @@ body {
     color: var(--dl-text-faint);
 }
 
-/* ── Badges / Tags ────────────────────────────────────────────── */
+/* ── Badges ───────────────────────────────────────────────────── */
 .dl-badge {
     display: inline-flex;
     align-items: center;
@@ -581,27 +585,27 @@ body {
     color: var(--dl-gray-600);
 }
 
-.dl-dark .dl-badge--violet {
+body.dl-dark .dl-badge--violet {
     background: rgba(127, 119, 221, 0.15);
     color: var(--dl-violet-200);
 }
 
-.dl-dark .dl-badge--teal {
+body.dl-dark .dl-badge--teal {
     background: rgba(29, 158, 117, 0.15);
     color: var(--dl-teal-200);
 }
 
-.dl-dark .dl-badge--amber {
+body.dl-dark .dl-badge--amber {
     background: rgba(239, 159, 39, 0.12);
     color: var(--dl-amber-400);
 }
 
-.dl-dark .dl-badge--coral {
+body.dl-dark .dl-badge--coral {
     background: rgba(216, 90, 48, 0.12);
     color: #F0997B;
 }
 
-.dl-dark .dl-badge--gray {
+body.dl-dark .dl-badge--gray {
     background: rgba(148, 144, 200, 0.12);
     color: var(--dl-gray-400);
 }
@@ -667,12 +671,12 @@ body {
     background: var(--dl-violet-100);
 }
 
-.dl-dark .dl-btn--subtle {
+body.dl-dark .dl-btn--subtle {
     background: rgba(127, 119, 221, 0.12);
     color: var(--dl-violet-200);
 }
 
-.dl-dark .dl-btn--subtle:hover {
+body.dl-dark .dl-btn--subtle:hover {
     background: rgba(127, 119, 221, 0.2);
 }
 
@@ -709,7 +713,7 @@ body {
     color: var(--dl-violet-600);
 }
 
-.dl-dark .dl-theme-toggle:hover {
+body.dl-dark .dl-theme-toggle:hover {
     background: rgba(127, 119, 221, 0.15);
     color: var(--dl-violet-200);
 }
@@ -882,17 +886,17 @@ body {
     color: var(--dl-violet-600);
 }
 
-.dl-dark .dl-alert--error {
+body.dl-dark .dl-alert--error {
     background: rgba(216, 90, 48, 0.12);
     color: #F0997B;
 }
 
-.dl-dark .dl-alert--success {
+body.dl-dark .dl-alert--success {
     background: rgba(29, 158, 117, 0.12);
     color: var(--dl-teal-200);
 }
 
-.dl-dark .dl-alert--info {
+body.dl-dark .dl-alert--info {
     background: rgba(127, 119, 221, 0.12);
     color: var(--dl-violet-200);
 }
@@ -936,7 +940,7 @@ body {
     flex-shrink: 0;
 }
 
-.dl-dark .dl-module-num {
+body.dl-dark .dl-module-num {
     background: rgba(127, 119, 221, 0.15);
     color: var(--dl-violet-200);
 }
@@ -946,7 +950,7 @@ body {
     color: var(--dl-teal-600);
 }
 
-.dl-dark .dl-module-num--done {
+body.dl-dark .dl-module-num--done {
     background: rgba(29, 158, 117, 0.15);
     color: var(--dl-teal-200);
 }
@@ -996,7 +1000,7 @@ body {
     border-color: var(--dl-violet-200);
 }
 
-.dl-dark .dl-lesson-item.active {
+body.dl-dark .dl-lesson-item.active {
     background: rgba(127, 119, 221, 0.12);
     border-color: rgba(127, 119, 221, 0.25);
 }
@@ -1109,7 +1113,7 @@ body {
     font-family: 'Fira Code', 'Cascadia Code', monospace;
 }
 
-.dl-dark .dl-lesson-content pre {
+body.dl-dark .dl-lesson-content pre {
     background: #0e0d1a;
 }
 
@@ -1122,7 +1126,7 @@ body {
     font-family: 'Fira Code', monospace;
 }
 
-.dl-dark .dl-lesson-content code {
+body.dl-dark .dl-lesson-content code {
     background: rgba(127, 119, 221, 0.15);
     color: var(--dl-violet-200);
 }
@@ -1197,8 +1201,131 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════
+   TEACHER THEME
+   body.dl-teacher wird per useEffect in Teacher-Pages gesetzt
+   ════════════════════════════════════════════════════════════════ */
+
+/* Sidebar Hover & Active */
+body.dl-teacher .dl-sidebar-link:hover {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+body.dl-dark.dl-teacher .dl-sidebar-link:hover {
+    background: rgba(29, 158, 117, 0.12);
+    color: var(--dl-teal-200);
+}
+
+body.dl-teacher .dl-sidebar-link.active {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+body.dl-dark.dl-teacher .dl-sidebar-link.active {
+    background: rgba(29, 158, 117, 0.15);
+    color: var(--dl-teal-200);
+}
+
+/* Avatar */
+body.dl-teacher .dl-avatar {
+    background: var(--dl-teal-50);
+    border-color: var(--dl-teal-200);
+    color: var(--dl-teal-600);
+}
+
+body.dl-dark.dl-teacher .dl-avatar {
+    background: rgba(29, 158, 117, 0.15);
+    border-color: var(--dl-teal-800);
+    color: var(--dl-teal-200);
+}
+
+/* Logo Akzent */
+body.dl-teacher .dl-sidebar-logo span {
+    color: var(--dl-teal-400);
+}
+
+/* Primary Button */
+body.dl-teacher .dl-btn--primary {
+    background: var(--dl-teal-400);
+}
+
+body.dl-teacher .dl-btn--primary:hover {
+    background: var(--dl-teal-600);
+}
+
+/* Subtle Button */
+body.dl-teacher .dl-btn--subtle {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+body.dl-teacher .dl-btn--subtle:hover {
+    background: var(--dl-teal-100);
+}
+
+body.dl-dark.dl-teacher .dl-btn--subtle {
+    background: rgba(29, 158, 117, 0.12);
+    color: var(--dl-teal-200);
+}
+
+body.dl-dark.dl-teacher .dl-btn--subtle:hover {
+    background: rgba(29, 158, 117, 0.2);
+}
+
+/* Badge Violet → Teal */
+body.dl-teacher .dl-badge--violet {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+body.dl-dark.dl-teacher .dl-badge--violet {
+    background: rgba(29, 158, 117, 0.15);
+    color: var(--dl-teal-200);
+}
+
+/* Modul-Nummer */
+body.dl-teacher .dl-module-num {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+body.dl-dark.dl-teacher .dl-module-num {
+    background: rgba(29, 158, 117, 0.15);
+    color: var(--dl-teal-200);
+}
+
+/* Formular Focus */
+body.dl-teacher .dl-field input:focus,
+body.dl-teacher .dl-field select:focus,
+body.dl-teacher .dl-field textarea:focus {
+    border-color: var(--dl-teal-400);
+}
+
+/* Breadcrumb Hover */
+body.dl-teacher .dl-breadcrumb a:hover,
+body.dl-teacher .dl-breadcrumb span[role="button"]:hover {
+    color: var(--dl-teal-400);
+}
+
+/* Section Link */
+body.dl-teacher .dl-section-link {
+    color: var(--dl-teal-400);
+}
+
+/* Theme Toggle */
+body.dl-teacher .dl-theme-toggle:hover {
+    background: var(--dl-teal-50);
+    border-color: var(--dl-teal-200);
+    color: var(--dl-teal-600);
+}
+
+body.dl-dark.dl-teacher .dl-theme-toggle:hover {
+    background: rgba(29, 158, 117, 0.15);
+    color: var(--dl-teal-200);
+}
+
+/* ════════════════════════════════════════════════════════════════
    RESPONSIVE
-   Alle Media Queries gesammelt am Ende — NUR EIN BLOCK pro Breakpoint
    ════════════════════════════════════════════════════════════════ */
 
 @media (max-width: 900px) {
@@ -1208,8 +1335,6 @@ body {
 }
 
 @media (max-width: 768px) {
-
-    /* Layout */
     .dl-page {
         padding: 24px;
     }
@@ -1218,7 +1343,6 @@ body {
         padding: 16px 24px;
     }
 
-    /* Sidebar: per default versteckt via left-offset, nicht display:none */
     .dl-sidebar {
         position: fixed;
         left: -260px;
@@ -1237,17 +1361,14 @@ body {
         left: 0;
     }
 
-    /* Overlay sichtbar wenn Sidebar offen */
     .dl-sidebar-overlay {
         display: block;
     }
 
-    /* Hamburger-Button sichtbar */
     .dl-topbar-menu-btn {
         display: flex;
     }
 
-    /* Grid-Anpassungen */
     .dl-stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1269,148 +1390,4 @@ body {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
-}
-
-/* ════════════════════════════════════════════════════════════════
-   TEACHER THEME
-   Auf allen Teacher-Seiten .dl-shell--teacher zum Root hinzufügen.
-   Überschreibt alle Violett-Akzente mit Teal.
-   ════════════════════════════════════════════════════════════════ */
-
-/* ── Sidebar ──────────────────────────────────────────────────── */
-.dl-shell--teacher .dl-sidebar-link:hover {
-    background: var(--dl-teal-50);
-    color: var(--dl-teal-600);
-}
-
-.dl-dark.dl-shell--teacher .dl-sidebar-link:hover {
-    background: rgba(29, 158, 117, 0.12);
-    color: var(--dl-teal-200);
-}
-
-.dl-shell--teacher .dl-sidebar-link.active {
-    background: var(--dl-teal-50);
-    color: var(--dl-teal-600);
-}
-
-.dl-dark.dl-shell--teacher .dl-sidebar-link.active {
-    background: rgba(29, 158, 117, 0.15);
-    color: var(--dl-teal-200);
-}
-
-/* ── Avatar ───────────────────────────────────────────────────── */
-.dl-shell--teacher .dl-avatar {
-    background: var(--dl-teal-50);
-    border-color: var(--dl-teal-200);
-    color: var(--dl-teal-600);
-}
-
-.dl-dark.dl-shell--teacher .dl-avatar {
-    background: rgba(29, 158, 117, 0.15);
-    border-color: var(--dl-teal-800);
-    color: var(--dl-teal-200);
-}
-
-/* ── Logo Akzent ──────────────────────────────────────────────── */
-.dl-shell--teacher .dl-sidebar-logo span {
-    color: var(--dl-teal-400);
-}
-
-/* ── Primary Button ───────────────────────────────────────────── */
-.dl-shell--teacher .dl-btn--primary {
-    background: var(--dl-teal-400);
-}
-
-.dl-shell--teacher .dl-btn--primary:hover {
-    background: var(--dl-teal-600);
-}
-
-/* ── Subtle Button ────────────────────────────────────────────── */
-.dl-shell--teacher .dl-btn--subtle {
-    background: var(--dl-teal-50);
-    color: var(--dl-teal-600);
-}
-
-.dl-shell--teacher .dl-btn--subtle:hover {
-    background: var(--dl-teal-100);
-}
-
-.dl-dark.dl-shell--teacher .dl-btn--subtle {
-    background: rgba(29, 158, 117, 0.12);
-    color: var(--dl-teal-200);
-}
-
-.dl-dark.dl-shell--teacher .dl-btn--subtle:hover {
-    background: rgba(29, 158, 117, 0.2);
-}
-
-/* ── Badge Violet → Teal im Teacher-Bereich ───────────────────── */
-.dl-shell--teacher .dl-badge--violet {
-    background: var(--dl-teal-50);
-    color: var(--dl-teal-600);
-}
-
-.dl-dark.dl-shell--teacher .dl-badge--violet {
-    background: rgba(29, 158, 117, 0.15);
-    color: var(--dl-teal-200);
-}
-
-/* ── Modul-Nummer ─────────────────────────────────────────────── */
-.dl-shell--teacher .dl-module-num {
-    background: var(--dl-teal-50);
-    color: var(--dl-teal-600);
-}
-
-.dl-dark.dl-shell--teacher .dl-module-num {
-    background: rgba(29, 158, 117, 0.15);
-    color: var(--dl-teal-200);
-}
-
-/* ── Formular Focus ───────────────────────────────────────────── */
-.dl-shell--teacher .dl-field input:focus,
-.dl-shell--teacher .dl-field select:focus,
-.dl-shell--teacher .dl-field textarea:focus {
-    border-color: var(--dl-teal-400);
-}
-
-/* ── Breadcrumb Hover ─────────────────────────────────────────── */
-.dl-shell--teacher .dl-breadcrumb a:hover,
-.dl-shell--teacher .dl-breadcrumb span[role="button"]:hover {
-    color: var(--dl-teal-400);
-}
-
-/* ── Section Link ─────────────────────────────────────────────── */
-.dl-shell--teacher .dl-section-link {
-    color: var(--dl-teal-400);
-}
-
-/* ── Theme Toggle ─────────────────────────────────────────────── */
-.dl-shell--teacher .dl-theme-toggle:hover {
-    background: var(--dl-teal-50);
-    border-color: var(--dl-teal-200);
-    color: var(--dl-teal-600);
-}
-
-.dl-dark.dl-shell--teacher .dl-theme-toggle:hover {
-    background: rgba(29, 158, 117, 0.15);
-    color: var(--dl-teal-200);
-}
-
-/* ── Hintergrundfarbe (subtle Teal statt Violett) ─────────────── */
-.dl-shell--teacher {
-    --dl-bg: #F0FBF7;
-    --dl-bg-muted: #F5FDF9;
-    --dl-border: rgba(29, 158, 117, 0.18);
-    --dl-border-hover: rgba(29, 158, 117, 0.38);
-    --dl-shadow-sm: 0 2px 8px rgba(15, 110, 86, 0.08);
-    --dl-shadow-md: 0 4px 20px rgba(15, 110, 86, 0.12);
-}
-
-.dl-dark.dl-shell--teacher {
-    --dl-bg: #0e1e18;
-    --dl-bg-muted: #0a1810;
-    --dl-border: rgba(29, 158, 117, 0.14);
-    --dl-border-hover: rgba(29, 158, 117, 0.3);
-    --dl-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-    --dl-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
 }

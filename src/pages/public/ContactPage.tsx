@@ -67,9 +67,6 @@ export default function ContactPage() {
 
       {/* Top-Bar */}
       <header className="dl-contact-topbar">
-        <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/")}>
-          <IconBack /> Zurück
-        </button>
         <div className="dl-contact-topbar-right">
           <span className="dl-contact-logo">
             Dev<span>Learn</span>
@@ -82,10 +79,14 @@ export default function ContactPage() {
 
       {/* Zentrierter Content */}
       <main className="dl-contact-main">
-
-        {/* Mail-Icon */}
         <div className="dl-contact-icon">
           <IconMail />
+        </div>
+
+        <div style={{ width: "100%", maxWidth: 520, marginBottom: 8 }}>
+          <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => navigate("/")}>
+            <IconBack /> Zurück
+          </button>
         </div>
 
         {sent ? (

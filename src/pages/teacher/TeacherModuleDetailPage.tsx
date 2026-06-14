@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
@@ -64,7 +64,12 @@ export default function TeacherModuleDetailPage() {
   const [lessonContent, setLessonContent]   = useState<string>("");
   const [lessonDuration, setLessonDuration] = useState<string>("");
   const [savingLesson, setSavingLesson]     = useState<boolean>(false);
-  const [lessonError, setLessonError]       = useState<string>("");
+  const [lessonError, setLessonError] = useState<string>("");
+  
+  useEffect(() => {
+  document.body.classList.add("dl-teacher");
+  return () => document.body.classList.remove("dl-teacher");
+  }, []);
 
   const handleNavigate = (path: string) => {
     setSidebarOpen(false);
@@ -73,7 +78,7 @@ export default function TeacherModuleDetailPage() {
 
   if (!course || !mod) {
     return (
-      <div className={`dl-shell dl-shell--teacher${darkMode ? " dl-dark" : ""}`}>
+      <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
         <main className="dl-main"><div className="dl-page">
           <div className="dl-empty">
             <div className="dl-empty-icon">🔍</div>

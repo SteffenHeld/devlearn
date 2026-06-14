@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebase";
@@ -93,7 +93,12 @@ export default function TeacherDashboard() {
   const [newCategory, setNewCategory] = useState("HTML/CSS/JS");
   const [newDesc, setNewDesc]         = useState("");
   const [saving, setSaving]           = useState(false);
-  const [formError, setFormError]     = useState("");
+  const [formError, setFormError] = useState("");
+  
+  useEffect(() => {
+  document.body.classList.add("dl-teacher");
+  return () => document.body.classList.remove("dl-teacher");
+  }, []);
 
   const handleLogout = async () => {
   setSidebarOpen(false);
@@ -141,7 +146,7 @@ export default function TeacherDashboard() {
   );
 
   return (
-    <div className={`dl-shell dl-shell--teacher${darkMode ? " dl-dark" : ""}`}>
+    <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
       {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
       {sidebarOpen && (
@@ -218,7 +223,7 @@ export default function TeacherDashboard() {
           <div className="dl-stats-grid">
             <div className="dl-stat">
               <p className="dl-stat-label">Kurse</p>
-              <p className="dl-stat-value dl-stat-value--violet">{courses.length}</p>
+              <p className="dl-stat-value dl-stat-value--teal">{courses.length}</p>
             </div>
             <div className="dl-stat">
               <p className="dl-stat-label">Module</p>
@@ -295,10 +300,10 @@ export default function TeacherDashboard() {
                 onClick={() => setActiveTab(tab)}
                 style={{
                   background: "transparent", border: "none",
-                  borderBottom: activeTab === tab ? "2px solid var(--dl-violet-400)" : "2px solid transparent",
+                  borderBottom: activeTab === tab ? "2px solid var(--dl-teal-400)" : "2px solid transparent",
                   padding: "10px 16px", fontFamily: "var(--dl-font)", fontSize: 14,
                   fontWeight: activeTab === tab ? 600 : 400,
-                  color: activeTab === tab ? "var(--dl-violet-400)" : "var(--dl-text-muted)",
+                  color: activeTab === tab ? "var(--dl-teal-400)" : "var(--dl-text-muted)",
                   cursor: "pointer", marginBottom: -1, transition: "color 0.15s, border-color 0.15s",
                 }}
                 aria-selected={activeTab === tab}

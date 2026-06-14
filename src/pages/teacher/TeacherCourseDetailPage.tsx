@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
@@ -80,6 +80,11 @@ export default function TeacherCourseDetailPage() {
   const [editDesc, setEditDesc]         = useState<string>(course?.description ?? "");
   const [savingCourse, setSavingCourse] = useState<boolean>(false);
 
+  useEffect(() => {
+  document.body.classList.add("dl-teacher");
+  return () => document.body.classList.remove("dl-teacher");
+  }, []);
+
   const handleNavigate = (path: string) => {
     setSidebarOpen(false);
     navigate(path);
@@ -87,7 +92,7 @@ export default function TeacherCourseDetailPage() {
 
   if (!course) {
     return (
-      <div className={`dl-shell dl-shell--teacher${darkMode ? " dl-dark" : ""}`}>
+      <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
         <main className="dl-main"><div className="dl-page">
           <div className="dl-empty">
             <div className="dl-empty-icon">🔍</div>
@@ -128,7 +133,7 @@ export default function TeacherCourseDetailPage() {
   const cat = course.category ?? "HTML/CSS/JS";
 
   return (
-    <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
+    <div className={`dl-shell dl-shell--teacher${darkMode ? " dl-dark" : ""}`}>
 
       {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
       {sidebarOpen && (

@@ -1,6 +1,4 @@
-import { createContext, useContext, useState, useMemo, ReactNode } from "react";
-import { ThemeProvider, createTheme, Theme } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 // ─── Typen ────────────────────────────────────────────────────────────────────
 
@@ -9,10 +7,6 @@ type ThemeMode = "light" | "dark";
 interface ThemeToggleContextType {
   mode: ThemeMode;
   toggleTheme: () => void;
-}
-
-interface ThemeContextProviderProps {
-  children: ReactNode;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -27,45 +21,26 @@ export function useThemeToggle(): ThemeToggleContextType {
   return context;
 }
 
-// ─── Theme Builder ────────────────────────────────────────────────────────────
-
-function buildTheme(mode: ThemeMode): Theme {
-  return createTheme({
-    palette: {
-      mode,
-      primary:   { main: "#2E75B6" },
-      secondary: { main: "#FF6B35" },
-      background: {
-        default: mode === "light" ? "#F5F7FA" : "#121212",
-        paper:   mode === "light" ? "#FFFFFF"  : "#1E1E1E",
-      },
-    },
-    typography: {
-      fontFamily: '"Inter", "Roboto", "Arial", sans-serif',
-      h1: { fontWeight: 700 },
-      h2: { fontWeight: 700 },
-      h3: { fontWeight: 600 },
-    },
-    shape: { borderRadius: 10 },
-  });
-}
-
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
-export function ThemeContextProvider({ children }: ThemeContextProviderProps) {
+export function ThemeContextProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>("light");
 
   const toggleTheme = () =>
     setMode((prev) => (prev === "light" ? "dark" : "light"));
 
-  const theme = useMemo(() => buildTheme(mode), [mode]);
+  // dl-dark global auf body setzen — wirkt auf alle Pages und CSS-Variablen
+  useEffect(() => {
+    if (mode === "dark") {
+      document.body.classList.add("dl-dark");
+    } else {
+      document.body.classList.remove("dl-dark");
+    }
+  }, [mode]);
 
   return (
     <ThemeToggleContext.Provider value={{ mode, toggleTheme }}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        {children}
-      </ThemeProvider>
+      {children}
     </ThemeToggleContext.Provider>
   );
 }

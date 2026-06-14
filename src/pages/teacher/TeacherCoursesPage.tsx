@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
@@ -66,7 +66,12 @@ export default function TeacherCoursesPage() {
   const [category, setCategory]       = useState<string>("HTML/CSS/JS");
   const [description, setDescription] = useState<string>("");
   const [saving, setSaving]           = useState<boolean>(false);
-  const [error, setError]             = useState<string>("");
+  const [error, setError] = useState<string>("");
+  
+  useEffect(() => {
+  document.body.classList.add("dl-teacher");
+  return () => document.body.classList.remove("dl-teacher");
+  }, []);
 
   const handleNavigate = (path: string) => {
     setSidebarOpen(false);
@@ -90,7 +95,7 @@ export default function TeacherCoursesPage() {
   };
 
   return (
-    <div className={`dl-shell dl-shell--teacher${darkMode ? " dl-dark" : ""}`}>
+    <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
       {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
       {sidebarOpen && (
