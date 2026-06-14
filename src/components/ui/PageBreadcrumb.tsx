@@ -28,7 +28,7 @@ export default function PageBreadcrumb({ items }: PageBreadcrumbProps) {
             ) : (
               <>
                 <span role="button" onClick={item.onClick}>{item.label}</span>
-                <span className="dl-breadcrumb-sep" aria-hidden="true">/</span>
+                <span className="dl-breadcrumb-sep" aria-hidden="true"> / </span>
               </>
             )}
           </span>

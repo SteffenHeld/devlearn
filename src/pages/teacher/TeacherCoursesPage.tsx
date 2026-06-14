@@ -218,7 +218,7 @@ export default function TeacherCoursesPage() {
                             <button className="dl-btn dl-btn--subtle dl-btn--sm" onClick={() => handleNavigate(`/teacher/kurse/${course.id}`)}>
                               <IconEdit /> Bearbeiten
                             </button>
-                            <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => handleNavigate(`/kurse/${course.id}`)} title="Studentenansicht">
+                            <button className="dl-btn dl-btn--ghost dl-btn--sm" onClick={() => handleNavigate(`/kurse/${course.slug ?? course.id}`)} title="Studentenansicht">
                               <IconEye />
                             </button>
                           </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, collection, getDocs, orderBy, query } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
 import { useProgress } from "../../hooks/useProgress";
@@ -56,6 +56,7 @@ const IconMoon = () => (
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
   </svg>
 );
+
 const bannerColor: Record<string, string> = {
   "HTML/CSS/JS": "--violet", "React/Vite/TS": "--teal", "Figma": "--amber", "Framer": "--coral",
 };
@@ -64,7 +65,7 @@ const bannerEmoji: Record<string, string> = {
 };
 
 export default function CourseDetailPage() {
-  const { kursId } = useParams<{ kursId: string }>();
+  const { kursSlug } = useParams<{ kursSlug: string }>();
   const navigate = useNavigate();
   const { mode, toggleTheme } = useThemeToggle();
   const darkMode = mode === "dark";
@@ -81,21 +82,30 @@ export default function CourseDetailPage() {
   };
 
   useEffect(() => {
-    if (!kursId) return;
+    if (!kursSlug) return;
     async function fetchData(): Promise<void> {
-      const courseSnap = await getDoc(doc(db, "courses", kursId!));
-      if (courseSnap.exists()) {
-        setCourse({ id: courseSnap.id, ...(courseSnap.data() as Omit<Course, "id">) });
+      const coursesQuery = query(
+        collection(db, "courses"),
+        where("slug", "==", kursSlug)
+      );
+      const coursesSnap = await getDocs(coursesQuery);
+      if (coursesSnap.empty) {
+        setLoading(false);
+        return;
       }
+      const courseDoc = coursesSnap.docs[0];
+      const courseId = courseDoc.id;
+      setCourse({ id: courseId, ...(courseDoc.data() as Omit<Course, "id">) });
+
       const modulesQuery = query(
-        collection(db, "courses", kursId!, "modules"),
+        collection(db, "courses", courseId, "modules"),
         orderBy("order")
       );
       const modulesSnap = await getDocs(modulesQuery);
       const modulesWithIds: ModuleWithLessonIds[] = await Promise.all(
         modulesSnap.docs.map(async (d) => {
           const lessonsSnap = await getDocs(
-            collection(db, "courses", kursId!, "modules", d.id, "lessons")
+            collection(db, "courses", courseId, "modules", d.id, "lessons")
           );
           return {
             id: d.id,
@@ -108,9 +118,10 @@ export default function CourseDetailPage() {
       setLoading(false);
     }
     fetchData();
-  }, [kursId]);
+  }, [kursSlug]);
 
-  const p: CourseProgress | undefined = progress[kursId ?? ""];
+  // Progress per echter Firestore-ID nachschlagen (nicht per Slug)
+  const p: CourseProgress | undefined = progress[course?.id ?? ""];
   const completedLessons: string[] = p?.completedLessons ?? [];
   const totalLessons = modules.reduce((sum, m) => sum + m.lessonIds.length, 0);
   const doneLessons  = completedLessons.length;
@@ -185,10 +196,10 @@ export default function CourseDetailPage() {
             <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{course.title}</span>
           </div>
           <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
-            <button className="dl-sidebar-link" onClick={toggleTheme}>
-              {mode === "dark" ? <IconSun /> : <IconMoon />}
-              {mode === "dark" ? "Light Mode" : "Dark Mode"}
-            </button>
+          <button className="dl-sidebar-link" onClick={toggleTheme}>
+            {mode === "dark" ? <IconSun /> : <IconMoon />}
+            {mode === "dark" ? "Light Mode" : "Dark Mode"}
+          </button>
         </nav>
 
         {modules.length > 0 && (
@@ -199,7 +210,7 @@ export default function CourseDetailPage() {
                 <button
                   key={mod.id}
                   className="dl-sidebar-link"
-                  onClick={() => handleNavigate(`/kurse/${kursId}/${mod.id}`)}
+                  onClick={() => handleNavigate(`/kurse/${kursSlug}/${mod.id}`)}
                   style={{ fontSize: 13 }}
                 >
                   <span style={{
@@ -218,18 +229,18 @@ export default function CourseDetailPage() {
 
       {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
-          {/* ── Topbar ── */}
-          <div className="dl-topbar">
-            <button
-              className="dl-topbar-menu-btn"
-              onClick={() => setSidebarOpen((prev) => !prev)}
-              aria-label="Menü öffnen"
-            >
-              {sidebarOpen ? <IconClose /> : <IconMenu />}
-            </button>
-            <span className="dl-topbar-title">{course.title}</span>
-          </div>
-        
+        {/* ── Topbar ── */}
+        <div className="dl-topbar">
+          <button
+            className="dl-topbar-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Menü öffnen"
+          >
+            {sidebarOpen ? <IconClose /> : <IconMenu />}
+          </button>
+          <span className="dl-topbar-title">{course.title}</span>
+        </div>
+
         <div className="dl-page">
           <PageBreadcrumb items={[
             { label: "Kurse", onClick: () => handleNavigate("/kurse") },
@@ -290,10 +301,10 @@ export default function CourseDetailPage() {
                     <div
                       key={mod.id}
                       className="dl-module-item"
-                      onClick={() => handleNavigate(`/kurse/${kursId}/${mod.id}`)}
+                      onClick={() => handleNavigate(`/kurse/${kursSlug}/${mod.id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={(e) => e.key === "Enter" && handleNavigate(`/kurse/${kursId}/${mod.id}`)}
+                      onKeyDown={(e) => e.key === "Enter" && handleNavigate(`/kurse/${kursSlug}/${mod.id}`)}
                       aria-label={`Modul ${i + 1}: ${mod.title}`}
                     >
                       <div className={`dl-module-num${isDone ? " dl-module-num--done" : ""}`}>

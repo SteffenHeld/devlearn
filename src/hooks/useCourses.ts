@@ -6,6 +6,7 @@ import {
 import { db } from "../firebase/firebase";
 import { Course, Module } from "../types";
 import { useAuth } from "../context/AuthContext";
+import { toSlug } from "../utils/slug";
 
 interface NewCourse {
   title: string;
@@ -28,10 +29,10 @@ interface UseCoursesReturn {
   courses: Course[];
   loading: boolean;
   error: string | null;
-  addCourse:    (data: NewCourse)                                     => Promise<{ id: string }>;
-  addModule:    (courseId: string, data: NewModule)                   => Promise<{ id: string }>;
+  addCourse:    (data: NewCourse) => Promise<{ id: string; slug: string }>; // ← slug ergänzt
+  addModule:    (courseId: string, data: NewModule) => Promise<{ id: string }>;
   addLesson:    (courseId: string, moduleId: string, data: NewLesson) => Promise<{ id: string }>;
-  updateCourse: (courseId: string, data: Partial<NewCourse>)          => Promise<void>;
+  updateCourse: (courseId: string, data: Partial<NewCourse>) => Promise<void>;
 }
 
 export default function useCourses(): UseCoursesReturn {
@@ -109,9 +110,11 @@ export default function useCourses(): UseCoursesReturn {
   }, [user]);
 
   // Kurs erstellen
-  const addCourse = async (data: NewCourse): Promise<{ id: string }> => {
+  const addCourse = async (data: NewCourse): Promise<{ id: string; slug: string }> => {
+    const slug = toSlug(data.title);
     const ref = await addDoc(collection(db, "courses"), {
       title:       data.title,
+      slug,
       category:    data.category ?? "HTML/CSS/JS",
       description: data.description ?? "",
       createdBy:   user?.uid ?? "",
@@ -119,7 +122,7 @@ export default function useCourses(): UseCoursesReturn {
       lessonCount: 0,
       createdAt:   serverTimestamp(),
     });
-    return { id: ref.id };
+    return { id: ref.id, slug };
   };
 
   // Modul erstellen

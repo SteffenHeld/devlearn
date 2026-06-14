@@ -85,17 +85,17 @@ export default function App() {
             <CoursesPage />
           </ProtectedRoute>
         } />
-        <Route path="/kurse/:kursId" element={
+        <Route path="/kurse/:kursSlug" element={
           <ProtectedRoute allowedRoles={["student"]}>
             <CourseDetailPage />
           </ProtectedRoute>
         } />
-        <Route path="/kurse/:kursId/:modulId" element={
+        <Route path="/kurse/:kursSlug/:modulId" element={
           <ProtectedRoute allowedRoles={["student"]}>
             <ModuleDetailPage />
           </ProtectedRoute>
         } />
-        <Route path="/kurse/:kursId/:modulId/:lektionId" element={
+        <Route path="/kurse/:kursSlug/:modulId/:lektionId" element={
           <ProtectedRoute allowedRoles={["student"]}>
             <LessonPage />
           </ProtectedRoute>

@@ -1059,7 +1059,7 @@ body {
 }
 
 .dl-breadcrumb-current {
-    color: var(--dl-text-primary);
+    color: var(--dl-text-muted);
     font-weight: 500;
 }
 
