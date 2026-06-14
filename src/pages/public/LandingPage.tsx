@@ -16,8 +16,8 @@ export default function LandingPage() {
   const [email, setEmail]       = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError]       = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [role, setRole] = useState<"student" | "teacher">("student");
+  const [loading, setLoading]   = useState<boolean>(false);
+  const [role, setRole]         = useState<"student" | "teacher">("student");
 
   // Passwort vergessen
   const [showReset, setShowReset]       = useState<boolean>(false);
@@ -26,14 +26,14 @@ export default function LandingPage() {
   const [resetError, setResetError]     = useState<string>("");
   const [resetLoading, setResetLoading] = useState<boolean>(false);
 
+  const isTeacher = role === "teacher";
+
   const handleLogin = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Kurzer Delay damit onAuthStateChanged feuern kann
-      // bevor React Router zur Dashboard-Route navigiert
       await new Promise((resolve) => setTimeout(resolve, 300));
       navigate("/dashboard");
     } catch {
@@ -57,8 +57,14 @@ export default function LandingPage() {
     }
   };
 
+  const shellClass = [
+    "dl-landing",
+    darkMode ? "dl-dark" : "",
+    isTeacher ? "dl-landing--teacher" : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <div className={`dl-landing${darkMode ? " dl-dark" : ""}`}>
+    <div className={shellClass}>
 
       {/* ── SVG-Hintergrund ─────────────────────────────────────────────────── */}
       <svg className="dl-diag-bg" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
@@ -115,40 +121,26 @@ export default function LandingPage() {
       {/* ── Login-Zone ──────────────────────────────────────────────────────── */}
       <div className="dl-login-zone">
         <div className="dl-login-card">
+
+          {/* ── Rollen-Tabs ─────────────────────────────────────────────────── */}
           <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
             <button
               type="button"
               onClick={() => setRole("student")}
-              style={{
-                flex: 1, padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 600,
-                cursor: "pointer", fontFamily: "var(--dl-font)",
-                border: "1px solid",
-                borderColor: role === "student" ? "var(--dl-violet-400)" : "var(--dl-border)",
-                background: role === "student" ? "var(--dl-violet-400)" : "transparent",
-                color: role === "student" ? "#fff" : "var(--dl-text-muted)",
-                transition: "all 0.15s",
-              }}
+              className={`dl-role-btn dl-role-btn--student${!isTeacher ? " dl-role-btn--active" : ""}`}
             >
               👨‍🎓 Student
             </button>
             <button
               type="button"
               onClick={() => setRole("teacher")}
-              style={{
-                flex: 1, padding: "8px 0", borderRadius: 8, fontSize: 13, fontWeight: 600,
-                cursor: "pointer", fontFamily: "var(--dl-font)",
-                border: "1px solid",
-                borderColor: role === "teacher" ? "var(--dl-teal-400)" : "var(--dl-border)",
-                background: role === "teacher" ? "var(--dl-teal-400)" : "transparent",
-                color: role === "teacher" ? "#fff" : "var(--dl-text-muted)",
-                transition: "all 0.15s",
-              }}
+              className={`dl-role-btn dl-role-btn--teacher${isTeacher ? " dl-role-btn--active" : ""}`}
             >
               👨‍🏫 Lehrer
             </button>
           </div>
 
-          {/* ── Passwort-Reset-Ansicht ───────────────────────────────────── */}
+          {/* ── Passwort-Reset ───────────────────────────────────────────────── */}
           {showReset ? (
             <>
               <h2 className="dl-login-title">Passwort zurücksetzen</h2>
@@ -193,12 +185,7 @@ export default function LandingPage() {
                     />
                   </div>
                   {resetError && <p className="dl-error">{resetError}</p>}
-                  <button
-                    type="submit"
-                    className="dl-login-btn"
-                    disabled={resetLoading}
-                    style={{ marginBottom: 10 }}
-                  >
+                  <button type="submit" className="dl-login-btn" disabled={resetLoading} style={{ marginBottom: 10 }}>
                     {resetLoading ? "Wird gesendet…" : "Reset-Link senden"}
                   </button>
                   <button
@@ -235,15 +222,10 @@ export default function LandingPage() {
                 <div className="dl-field">
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                     <label htmlFor="dl-password" style={{ margin: 0 }}>Passwort</label>
-                    {/* Passwort vergessen — überträgt eingetippte E-Mail direkt */}
                     <button
                       type="button"
                       onClick={() => { setShowReset(true); setResetEmail(email); }}
-                      style={{
-                        background: "none", border: "none", padding: 0,
-                        fontSize: 12, color: "var(--dl-violet-400)",
-                        cursor: "pointer", fontFamily: "var(--dl-font)",
-                      }}
+                      className="dl-forgot-btn"
                     >
                       Passwort vergessen?
                     </button>
@@ -259,14 +241,7 @@ export default function LandingPage() {
                   />
                 </div>
                 {error && <p className="dl-error">{error}</p>}
-                  <button
-                    type="submit"
-                    className="dl-login-btn"
-                    disabled={loading}
-                    style={{
-                      background: role === "teacher" ? "var(--dl-teal-400)" : "var(--dl-violet-400)",
-                    }}
-                  >
+                <button type="submit" className="dl-login-btn" disabled={loading}>
                   {loading ? "Wird eingeloggt…" : "Einloggen"}
                 </button>
               </form>

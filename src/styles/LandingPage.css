@@ -1,4 +1,10 @@
-/* Wrapper */
+/* ═══════════════════════════════════════════════════════════════
+   DevLearn — LandingPage
+   Theme wechselt zwischen Violett (Student) und Teal (Teacher)
+   via .dl-landing--teacher auf dem Root-Element
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── CSS-Variablen: Standard = Student (Violett) ─────────────── */
 .dl-landing {
     position: relative;
     min-height: 100vh;
@@ -6,14 +12,114 @@
     overflow: hidden;
     background: #e8e6f8;
     font-family: 'DM Sans', 'Segoe UI', sans-serif;
-    transition: background 0.3s;
+
+    --lp-accent: #7F77DD;
+    --lp-accent-dark: #534AB7;
+    --lp-accent-bg: rgba(127, 119, 221, 0.12);
+    --lp-accent-border: #b8b4e0;
+    --lp-accent-light: #EEEDFE;
+    --lp-bg: #e8e6f8;
+
+    transition: background 0.4s, --lp-accent 0.4s;
 }
 
-/* Dark Mode */
-.dl-dark {
+/* ── Teacher-Theme überschreibt Akzent ───────────────────────── */
+.dl-landing--teacher {
+    background: #e0f4ed;
+
+    --lp-accent: #1D9E75;
+    --lp-accent-dark: #0F6E56;
+    --lp-accent-bg: rgba(29, 158, 117, 0.12);
+    --lp-accent-border: #9fe1cb;
+    --lp-accent-light: #E1F5EE;
+    --lp-bg: #e0f4ed;
+}
+
+/* ── Dark Mode ───────────────────────────────────────────────── */
+.dl-dark.dl-landing {
     background: #12111e;
+    --lp-bg: #12111e;
 }
 
+.dl-dark.dl-landing--teacher {
+    background: #0e1e18;
+    --lp-bg: #0e1e18;
+}
+
+/* SVG-Zonen: Standard */
+.dl-zone-purple {
+    fill: #c8c4f8;
+    opacity: 0.45;
+    transition: fill 0.4s;
+}
+
+.dl-zone-teal {
+    fill: #b8eed8;
+    opacity: 0.45;
+    transition: fill 0.4s;
+}
+
+/* SVG-Zonen: Teacher — Teal dominiert, Violett tritt zurück */
+.dl-landing--teacher .dl-zone-purple {
+    fill: #b8eed8;
+    opacity: 0.35;
+}
+
+.dl-landing--teacher .dl-zone-teal {
+    fill: #5dcaa5;
+    opacity: 0.5;
+}
+
+.dl-diag-line {
+    stroke: #9490d8;
+    stroke-width: 1;
+    opacity: 0.4;
+    transition: stroke 0.4s;
+}
+
+.dl-diag-line--2 {
+    stroke: #5dbca0;
+    stroke-width: 1;
+    opacity: 0.35;
+}
+
+.dl-landing--teacher .dl-diag-line {
+    stroke: #5dbca0;
+    opacity: 0.35;
+}
+
+.dl-landing--teacher .dl-diag-line--2 {
+    stroke: #1D9E75;
+    opacity: 0.4;
+}
+
+.dl-deco-circle {
+    fill: none;
+    stroke-width: 0.8;
+}
+
+.dl-deco-circle--left {
+    stroke: #a8a4e8;
+    opacity: 0.45;
+    transition: stroke 0.4s;
+}
+
+.dl-deco-circle--right {
+    stroke: #5dbca0;
+    opacity: 0.4;
+}
+
+.dl-landing--teacher .dl-deco-circle--left {
+    stroke: #5dbca0;
+    opacity: 0.4;
+}
+
+.dl-landing--teacher .dl-deco-circle--right {
+    stroke: #1D9E75;
+    opacity: 0.5;
+}
+
+/* ── Dark Mode SVG ───────────────────────────────────────────── */
 .dl-dark .dl-zone-purple {
     fill: #2a2750;
     opacity: 0.6;
@@ -22,6 +128,16 @@
 .dl-dark .dl-zone-teal {
     fill: #0d2e25;
     opacity: 0.7;
+}
+
+.dl-dark.dl-landing--teacher .dl-zone-purple {
+    fill: #0d2e25;
+    opacity: 0.5;
+}
+
+.dl-dark.dl-landing--teacher .dl-zone-teal {
+    fill: #0a4030;
+    opacity: 0.8;
 }
 
 .dl-dark .dl-diag-line {
@@ -34,6 +150,16 @@
     opacity: 0.4;
 }
 
+.dl-dark.dl-landing--teacher .dl-diag-line {
+    stroke: #1a5c46;
+    opacity: 0.4;
+}
+
+.dl-dark.dl-landing--teacher .dl-diag-line--2 {
+    stroke: #1D9E75;
+    opacity: 0.35;
+}
+
 .dl-dark .dl-deco-circle--left {
     stroke: #4a4580;
 }
@@ -42,113 +168,15 @@
     stroke: #1a5c46;
 }
 
-.dl-dark .dl-logo {
-    color: #f0effe;
+.dl-dark.dl-landing--teacher .dl-deco-circle--left {
+    stroke: #1a5c46;
 }
 
-.dl-dark .dl-nav a {
-    color: #a8a4cc;
+.dl-dark.dl-landing--teacher .dl-deco-circle--right {
+    stroke: #1D9E75;
 }
 
-.dl-dark .dl-nav a:hover {
-    background: rgba(127, 119, 221, 0.15);
-    color: #c4bff5;
-}
-
-.dl-dark .dl-register-btn {
-    color: #c4bff5;
-    border-color: #4a4580;
-}
-
-.dl-dark .dl-register-btn:hover {
-    background: rgba(127, 119, 221, 0.15);
-}
-
-.dl-dark .dl-theme-toggle {
-    color: #a8a4cc;
-    border-color: #4a4580;
-}
-
-.dl-dark .dl-theme-toggle:hover {
-    background: rgba(127, 119, 221, 0.15);
-    color: #c4bff5;
-}
-
-.dl-dark .dl-hero-tag {
-    background: #2a2750;
-    color: #c4bff5;
-}
-
-.dl-dark .dl-hero-title {
-    color: #f0effe;
-}
-
-.dl-dark .dl-hero-sub {
-    color: #8884aa;
-}
-
-.dl-dark .dl-btn-ghost {
-    color: #8884aa;
-    border-color: #3a3660;
-}
-
-.dl-dark .dl-btn-ghost:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: #6060a0;
-}
-
-.dl-dark .dl-zone-label {
-    color: #6660a0;
-}
-
-.dl-dark .dl-zone-label--teal {
-    color: #2a8a68;
-}
-
-.dl-dark .dl-contact-link {
-    background: #1e1c38;
-    border-color: #3a3660;
-    color: #c4bff5;
-}
-
-.dl-dark .dl-contact-link:hover {
-    background: #2a2750;
-    border-color: #6060a0;
-}
-
-.dl-dark .dl-login-card {
-    background: #1a1830;
-    border-color: #2e2b50;
-}
-
-.dl-dark .dl-login-title {
-    color: #f0effe;
-}
-
-.dl-dark .dl-field label {
-    color: #6660a0;
-}
-
-.dl-dark .dl-field input {
-    background: #12111e;
-    border-color: #2e2b50;
-    color: #f0effe;
-}
-
-.dl-dark .dl-field input:focus {
-    border-color: #7F77DD;
-    background: #12111e;
-}
-
-.dl-dark .dl-field input::placeholder {
-    color: #3e3b60;
-}
-
-.dl-dark .dl-register-hint {
-    color: #5550a0;
-}
-
-/* SVG-Hintergrund */
+/* ── SVG-Hintergrund ─────────────────────────────────────────── */
 .dl-diag-bg {
     position: absolute;
     inset: 0;
@@ -158,44 +186,7 @@
     z-index: 0;
 }
 
-.dl-zone-purple {
-    fill: #c8c4f8;
-    opacity: 0.45;
-}
-
-.dl-zone-teal {
-    fill: #b8eed8;
-    opacity: 0.45;
-}
-
-.dl-diag-line {
-    stroke: #9490d8;
-    stroke-width: 1;
-    opacity: 0.4;
-}
-
-.dl-diag-line--2 {
-    stroke: #5dbca0;
-    stroke-width: 1;
-    opacity: 0.35;
-}
-
-.dl-deco-circle {
-    fill: none;
-    stroke-width: 0.8;
-}
-
-.dl-deco-circle--left {
-    stroke: #a8a4e8;
-    opacity: 0.45;
-}
-
-.dl-deco-circle--right {
-    stroke: #5dbca0;
-    opacity: 0.4;
-}
-
-/* Header / Navigation */
+/* ── Header / Navigation ─────────────────────────────────────── */
 .dl-header {
     position: relative;
     z-index: 10;
@@ -215,7 +206,8 @@
 }
 
 .dl-logo span {
-    color: #7F77DD;
+    color: var(--lp-accent);
+    transition: color 0.4s;
 }
 
 .dl-nav {
@@ -233,11 +225,25 @@
 }
 
 .dl-nav a:hover {
-    background: rgba(127, 119, 221, 0.12);
-    color: #534AB7;
+    background: var(--lp-accent-bg);
+    color: var(--lp-accent-dark);
 }
 
-/* Dark-Mode-Toggle */
+/* ── Dark Mode Nav ───────────────────────────────────────────── */
+.dl-dark .dl-logo {
+    color: #f0effe;
+}
+
+.dl-dark .dl-nav a {
+    color: #a8a4cc;
+}
+
+.dl-dark .dl-nav a:hover {
+    background: var(--lp-accent-bg);
+    color: #c4bff5;
+}
+
+/* ── Dark-Mode-Toggle ────────────────────────────────────────── */
 .dl-theme-toggle {
     display: flex;
     align-items: center;
@@ -245,38 +251,30 @@
     width: 36px;
     height: 36px;
     background: transparent;
-    border: 1px solid #b8b4e0;
+    border: 1px solid var(--lp-accent-border);
     border-radius: 8px;
     cursor: pointer;
-    color: #534AB7;
+    color: var(--lp-accent);
     transition: background 0.15s, border-color 0.15s, color 0.15s;
-    margin-right: 0;
     margin-left: auto;
 }
 
 .dl-theme-toggle:hover {
-    background: rgba(127, 119, 221, 0.12);
-    border-color: #7F77DD;
+    background: var(--lp-accent-bg);
+    border-color: var(--lp-accent);
 }
 
-/* Registrieren-Button */
-.dl-register-btn {
-    font-size: 13px;
-    font-weight: 500;
-    color: #534AB7;
-    background: transparent;
-    border: 1px solid #AFA9EC;
-    padding: 7px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+.dl-dark .dl-theme-toggle {
+    color: #a8a4cc;
+    border-color: #4a4580;
 }
 
-.dl-register-btn:hover {
-    background: rgba(127, 119, 221, 0.12);
+.dl-dark .dl-theme-toggle:hover {
+    background: var(--lp-accent-bg);
+    color: #c4bff5;
 }
 
-/* Hero */
+/* ── Hero ────────────────────────────────────────────────────── */
 .dl-hero {
     position: relative;
     z-index: 10;
@@ -291,12 +289,21 @@
     font-weight: 600;
     letter-spacing: 0.5px;
     text-transform: uppercase;
-    color: #534AB7;
-    background: rgba(127, 119, 221, 0.15);
+    color: var(--lp-accent-dark);
+    background: var(--lp-accent-bg);
     padding: 4px 12px;
     border-radius: 20px;
     margin-bottom: 20px;
-    transition: background 0.3s, color 0.3s;
+    transition: background 0.4s, color 0.4s;
+}
+
+.dl-dark .dl-hero-tag {
+    background: var(--lp-accent-bg);
+    color: #c4bff5;
+}
+
+.dl-landing--teacher .dl-dark .dl-hero-tag {
+    color: #9fe1cb;
 }
 
 .dl-hero-title {
@@ -309,6 +316,10 @@
     transition: color 0.3s;
 }
 
+.dl-dark .dl-hero-title {
+    color: #f0effe;
+}
+
 .dl-hero-sub {
     font-size: 16px;
     color: #4a4a6a;
@@ -318,6 +329,10 @@
     transition: color 0.3s;
 }
 
+.dl-dark .dl-hero-sub {
+    color: #8884aa;
+}
+
 .dl-hero-btns {
     display: flex;
     gap: 10px;
@@ -325,7 +340,7 @@
 }
 
 .dl-btn-primary {
-    background: #7F77DD;
+    background: var(--lp-accent);
     color: #fff;
     font-size: 14px;
     font-weight: 500;
@@ -333,11 +348,11 @@
     padding: 12px 24px;
     border-radius: 10px;
     cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
+    transition: background 0.3s, transform 0.1s;
 }
 
 .dl-btn-primary:hover {
-    background: #534AB7;
+    background: var(--lp-accent-dark);
 }
 
 .dl-btn-primary:active {
@@ -348,19 +363,29 @@
     background: transparent;
     color: #4a4a6a;
     font-size: 14px;
-    border: 1px solid #b8b4e0;
+    border: 1px solid var(--lp-accent-border);
     padding: 12px 24px;
     border-radius: 10px;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background 0.15s, border-color 0.3s;
 }
 
 .dl-btn-ghost:hover {
     background: rgba(0, 0, 0, 0.04);
-    border-color: #7F77DD;
+    border-color: var(--lp-accent);
 }
 
-/* ── Sektor-Labels ───────────────────────────────────────── */
+.dl-dark .dl-btn-ghost {
+    color: #8884aa;
+    border-color: #3a3660;
+}
+
+.dl-dark .dl-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--lp-accent);
+}
+
+/* ── Kontakt-Zone ────────────────────────────────────────────── */
 .dl-zone-label {
     font-size: 11px;
     color: #7878a0;
@@ -369,11 +394,10 @@
     transition: color 0.3s;
 }
 
-.dl-zone-label--teal {
-    color: #1D9E75;
+.dl-dark .dl-zone-label {
+    color: #6660a0;
 }
 
-/* ── Kontakt-Zone (unten-links) ──────────────────────────── */
 .dl-contact-zone {
     position: absolute;
     bottom: 60px;
@@ -387,25 +411,36 @@
     gap: 8px;
     font-size: 14px;
     font-weight: 500;
-    color: #534AB7;
-    background: rgba(127, 119, 221, 0.12);
-    border: 1px solid #b8b4e0;
+    color: var(--lp-accent-dark);
+    background: var(--lp-accent-bg);
+    border: 1px solid var(--lp-accent-border);
     padding: 10px 18px;
     border-radius: 10px;
     text-decoration: none;
-    transition: background 0.15s, border-color 0.15s;
+    transition: background 0.3s, border-color 0.3s, color 0.3s;
 }
 
 .dl-contact-link:hover {
-    background: rgba(127, 119, 221, 0.22);
-    border-color: #7F77DD;
+    background: var(--lp-accent-light);
+    border-color: var(--lp-accent);
 }
 
-/* Login-Zone */
+.dl-dark .dl-contact-link {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: #3a3660;
+    color: #c4bff5;
+}
+
+.dl-dark .dl-contact-link:hover {
+    background: var(--lp-accent-bg);
+    border-color: var(--lp-accent);
+}
+
+/* ── Login-Zone ──────────────────────────────────────────────── */
 .dl-login-zone {
     position: absolute;
     top: 50%;
-    transform: translateY(-60%);;
+    transform: translateY(-60%);
     right: 60px;
     z-index: 10;
     text-align: right;
@@ -422,6 +457,11 @@
     transition: background 0.3s, border-color 0.3s;
 }
 
+.dl-dark .dl-login-card {
+    background: #1a1830;
+    border-color: #2e2b50;
+}
+
 .dl-login-title {
     font-size: 17px;
     font-weight: 600;
@@ -430,7 +470,43 @@
     transition: color 0.3s;
 }
 
-/* ── Formular-Felder ─────────────────────────────────────── */
+.dl-dark .dl-login-title {
+    color: #f0effe;
+}
+
+/* ── Rollen-Buttons ──────────────────────────────────────────── */
+.dl-role-btn {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid var(--lp-accent-border);
+    background: transparent;
+    color: #7878a0;
+    transition: all 0.25s;
+}
+
+.dl-role-btn--student.dl-role-btn--active {
+    background: #7F77DD;
+    border-color: #7F77DD;
+    color: #fff;
+}
+
+.dl-role-btn--teacher.dl-role-btn--active {
+    background: #1D9E75;
+    border-color: #1D9E75;
+    color: #fff;
+}
+
+.dl-dark .dl-role-btn {
+    color: #6660a0;
+    border-color: #2e2b50;
+}
+
+/* ── Formular-Felder ─────────────────────────────────────────── */
 .dl-field {
     margin-bottom: 12px;
 }
@@ -444,6 +520,10 @@
     letter-spacing: 0.4px;
     margin-bottom: 5px;
     transition: color 0.3s;
+}
+
+.dl-dark .dl-field label {
+    color: #6660a0;
 }
 
 .dl-field input {
@@ -460,15 +540,46 @@
 }
 
 .dl-field input:focus {
-    border-color: #7F77DD;
+    border-color: var(--lp-accent);
     background: #fff;
+}
+
+.dl-dark .dl-field input {
+    background: #12111e;
+    border-color: #2e2b50;
+    color: #f0effe;
+}
+
+.dl-dark .dl-field input:focus {
+    border-color: var(--lp-accent);
+    background: #12111e;
 }
 
 .dl-field input::placeholder {
     color: #b0aed0;
 }
 
-/* ── Fehler ──────────────────────────────────────────────── */
+.dl-dark .dl-field input::placeholder {
+    color: #3e3b60;
+}
+
+/* ── Passwort-vergessen-Button ───────────────────────────────── */
+.dl-forgot-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 12px;
+    color: var(--lp-accent);
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.3s;
+}
+
+.dl-forgot-btn:hover {
+    text-decoration: underline;
+}
+
+/* ── Fehler ──────────────────────────────────────────────────── */
 .dl-error {
     font-size: 12px;
     color: #D85A30;
@@ -478,10 +589,10 @@
     margin-bottom: 10px;
 }
 
-/* ── Login-Button ────────────────────────────────────────── */
+/* ── Login-Button ────────────────────────────────────────────── */
 .dl-login-btn {
     width: 100%;
-    background: #1D9E75;
+    background: var(--lp-accent);
     color: #fff;
     border: none;
     border-radius: 10px;
@@ -490,12 +601,12 @@
     font-weight: 500;
     cursor: pointer;
     margin-top: 4px;
-    transition: background 0.15s, transform 0.1s;
+    transition: background 0.3s, transform 0.1s;
     font-family: inherit;
 }
 
 .dl-login-btn:hover {
-    background: #0F6E56;
+    background: var(--lp-accent-dark);
 }
 
 .dl-login-btn:active {
@@ -507,7 +618,7 @@
     cursor: not-allowed;
 }
 
-/* ── Registrierungs-Hinweis ──────────────────────────────── */
+/* ── Registrierungs-Hinweis ──────────────────────────────────── */
 .dl-register-hint {
     font-size: 12px;
     color: #7878a0;
@@ -515,23 +626,29 @@
     text-align: center;
 }
 
-.dl-register-hint span {
-    color: #7F77DD;
-    cursor: pointer;
-    font-weight: 500;
+.dl-dark .dl-register-hint {
+    color: #5550a0;
 }
 
-.dl-register-hint span:hover {
+.dl-register-hint a {
+    color: var(--lp-accent);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.dl-register-hint a:hover {
     text-decoration: underline;
 }
 
-/* ── Responsive ──────────────────────────────────────────── */
+/* ── Responsive ──────────────────────────────────────────────── */
 @media (max-width: 768px) {
     .dl-header {
         padding: 20px 24px;
         flex-wrap: nowrap;
         gap: 12px;
     }
+
     .dl-theme-toggle {
         margin-left: 0;
     }
@@ -541,7 +658,7 @@
         flex-basis: auto;
         flex: 1;
     }
-    
+
     .dl-hero {
         padding: 48px 24px 32px;
         margin-left: 0;
@@ -567,12 +684,12 @@
 
 @media (min-width: 769px) and (max-width: 1024px) {
     .dl-hero {
-        max-width:380px;
+        max-width: 380px;
         margin-left: 32px;
     }
 
-    dl.dl-login-zone {
-        right:24px;
+    .dl-login-zone {
+        right: 24px;
     }
 
     .dl-login-card {
