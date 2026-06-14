@@ -32,10 +32,10 @@ const IconCheck = () => (
 /**
  * CourseCard
  * Zeigt eine Kurskarte mit Banner, Fortschrittsbalken und Navigation.
- * Klick navigiert zu /kurse/:courseId
+ * Klick navigiert zu /kurse/:kursSlug
  *
  * Verwendung:
- *   <CourseCard course={course} progress={progress[course.id]} />
+ *   <CourseCard course={course} progress={progress[course.slug ?? course.id]} />
  */
 export default function CourseCard({ course, progress }: CourseCardProps) {
   const navigate = useNavigate();
@@ -51,10 +51,10 @@ export default function CourseCard({ course, progress }: CourseCardProps) {
   return (
     <div
       className="dl-course-card"
-      onClick={() => navigate(`/kurse/${course.id}`)}
+      onClick={() => navigate(`/kurse/${course.slug ?? course.id}`)}
       role="button"
       tabIndex={0}
-      onKeyDown={(e) => e.key === "Enter" && navigate(`/kurse/${course.id}`)}
+      onKeyDown={(e) => e.key === "Enter" && navigate(`/kurse/${course.slug ?? course.id}`)}
       aria-label={`Kurs: ${course.title}`}
     >
       {/* Banner */}
