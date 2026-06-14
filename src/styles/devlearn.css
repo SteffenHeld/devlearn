@@ -1270,3 +1270,147 @@ body {
         -webkit-overflow-scrolling: touch;
     }
 }
+
+/* ════════════════════════════════════════════════════════════════
+   TEACHER THEME
+   Auf allen Teacher-Seiten .dl-shell--teacher zum Root hinzufügen.
+   Überschreibt alle Violett-Akzente mit Teal.
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── Sidebar ──────────────────────────────────────────────────── */
+.dl-shell--teacher .dl-sidebar-link:hover {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+.dl-dark.dl-shell--teacher .dl-sidebar-link:hover {
+    background: rgba(29, 158, 117, 0.12);
+    color: var(--dl-teal-200);
+}
+
+.dl-shell--teacher .dl-sidebar-link.active {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+.dl-dark.dl-shell--teacher .dl-sidebar-link.active {
+    background: rgba(29, 158, 117, 0.15);
+    color: var(--dl-teal-200);
+}
+
+/* ── Avatar ───────────────────────────────────────────────────── */
+.dl-shell--teacher .dl-avatar {
+    background: var(--dl-teal-50);
+    border-color: var(--dl-teal-200);
+    color: var(--dl-teal-600);
+}
+
+.dl-dark.dl-shell--teacher .dl-avatar {
+    background: rgba(29, 158, 117, 0.15);
+    border-color: var(--dl-teal-800);
+    color: var(--dl-teal-200);
+}
+
+/* ── Logo Akzent ──────────────────────────────────────────────── */
+.dl-shell--teacher .dl-sidebar-logo span {
+    color: var(--dl-teal-400);
+}
+
+/* ── Primary Button ───────────────────────────────────────────── */
+.dl-shell--teacher .dl-btn--primary {
+    background: var(--dl-teal-400);
+}
+
+.dl-shell--teacher .dl-btn--primary:hover {
+    background: var(--dl-teal-600);
+}
+
+/* ── Subtle Button ────────────────────────────────────────────── */
+.dl-shell--teacher .dl-btn--subtle {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+.dl-shell--teacher .dl-btn--subtle:hover {
+    background: var(--dl-teal-100);
+}
+
+.dl-dark.dl-shell--teacher .dl-btn--subtle {
+    background: rgba(29, 158, 117, 0.12);
+    color: var(--dl-teal-200);
+}
+
+.dl-dark.dl-shell--teacher .dl-btn--subtle:hover {
+    background: rgba(29, 158, 117, 0.2);
+}
+
+/* ── Badge Violet → Teal im Teacher-Bereich ───────────────────── */
+.dl-shell--teacher .dl-badge--violet {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+.dl-dark.dl-shell--teacher .dl-badge--violet {
+    background: rgba(29, 158, 117, 0.15);
+    color: var(--dl-teal-200);
+}
+
+/* ── Modul-Nummer ─────────────────────────────────────────────── */
+.dl-shell--teacher .dl-module-num {
+    background: var(--dl-teal-50);
+    color: var(--dl-teal-600);
+}
+
+.dl-dark.dl-shell--teacher .dl-module-num {
+    background: rgba(29, 158, 117, 0.15);
+    color: var(--dl-teal-200);
+}
+
+/* ── Formular Focus ───────────────────────────────────────────── */
+.dl-shell--teacher .dl-field input:focus,
+.dl-shell--teacher .dl-field select:focus,
+.dl-shell--teacher .dl-field textarea:focus {
+    border-color: var(--dl-teal-400);
+}
+
+/* ── Breadcrumb Hover ─────────────────────────────────────────── */
+.dl-shell--teacher .dl-breadcrumb a:hover,
+.dl-shell--teacher .dl-breadcrumb span[role="button"]:hover {
+    color: var(--dl-teal-400);
+}
+
+/* ── Section Link ─────────────────────────────────────────────── */
+.dl-shell--teacher .dl-section-link {
+    color: var(--dl-teal-400);
+}
+
+/* ── Theme Toggle ─────────────────────────────────────────────── */
+.dl-shell--teacher .dl-theme-toggle:hover {
+    background: var(--dl-teal-50);
+    border-color: var(--dl-teal-200);
+    color: var(--dl-teal-600);
+}
+
+.dl-dark.dl-shell--teacher .dl-theme-toggle:hover {
+    background: rgba(29, 158, 117, 0.15);
+    color: var(--dl-teal-200);
+}
+
+/* ── Hintergrundfarbe (subtle Teal statt Violett) ─────────────── */
+.dl-shell--teacher {
+    --dl-bg: #F0FBF7;
+    --dl-bg-muted: #F5FDF9;
+    --dl-border: rgba(29, 158, 117, 0.18);
+    --dl-border-hover: rgba(29, 158, 117, 0.38);
+    --dl-shadow-sm: 0 2px 8px rgba(15, 110, 86, 0.08);
+    --dl-shadow-md: 0 4px 20px rgba(15, 110, 86, 0.12);
+}
+
+.dl-dark.dl-shell--teacher {
+    --dl-bg: #0e1e18;
+    --dl-bg-muted: #0a1810;
+    --dl-border: rgba(29, 158, 117, 0.14);
+    --dl-border-hover: rgba(29, 158, 117, 0.3);
+    --dl-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --dl-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
+}

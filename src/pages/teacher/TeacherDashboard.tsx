@@ -141,7 +141,7 @@ export default function TeacherDashboard() {
   );
 
   return (
-    <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
+    <div className={`dl-shell dl-shell--teacher${darkMode ? " dl-dark" : ""}`}>
 
       {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
       {sidebarOpen && (
