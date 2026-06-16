@@ -29,7 +29,7 @@ interface UseCoursesReturn {
   courses: Course[];
   loading: boolean;
   error: string | null;
-  addCourse:    (data: NewCourse) => Promise<{ id: string; slug: string }>; // ← slug ergänzt
+  addCourse:    (data: NewCourse) => Promise<{ id: string; slug: string }>;
   addModule:    (courseId: string, data: NewModule) => Promise<{ id: string }>;
   addLesson:    (courseId: string, moduleId: string, data: NewLesson) => Promise<{ id: string }>;
   updateCourse: (courseId: string, data: Partial<NewCourse>) => Promise<void>;
@@ -39,21 +39,21 @@ export default function useCourses(): UseCoursesReturn {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError]     = useState<string | null>(null);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   useEffect(() => {
+    // Warten bis Auth-Status bekannt ist — verhindert doppelten Snapshot-Start
+    if (authLoading) return;
+
     const q = query(collection(db, "courses"), orderBy("title"));
 
     const unsubscribe = onSnapshot(
       q,
       async (snapshot) => {
-        // Subcollections nur laden wenn User eingeloggt ist
-        // — Module/Lektionen sind laut Firestore Rules nur für auth != null lesbar
-        // — PublicCoursesPage lädt nur Kurse ohne Login, daher kein Subcollection-Read
         const data: Course[] = await Promise.all(
           snapshot.docs.map(async (d) => {
             if (!user) {
-              // Nicht eingeloggt — nur Kursdaten ohne Module zurückgeben
+              // Nicht eingeloggt — nur Kursdaten ohne Module
               return {
                 id: d.id,
                 ...(d.data() as Omit<Course, "id">),
@@ -68,7 +68,6 @@ export default function useCourses(): UseCoursesReturn {
               )
             );
 
-            // Für jedes Modul auch die Lektionen laden
             const modules: Module[] = await Promise.all(
               modulesSnap.docs.map(async (m) => {
                 const lessonsSnap = await getDocs(
@@ -106,8 +105,7 @@ export default function useCourses(): UseCoursesReturn {
     );
 
     return () => unsubscribe();
-  // user als Dependency — wenn User sich einloggt, werden Module nachgeladen
-  }, [user]);
+  }, [user, authLoading]); // authLoading als Dependency — startet erst wenn Auth sicher bekannt
 
   // Kurs erstellen
   const addCourse = async (data: NewCourse): Promise<{ id: string; slug: string }> => {

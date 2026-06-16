@@ -88,23 +88,75 @@ export default function LandingPage() {
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <main className="dl-hero">
-        <span className="dl-hero-tag">Lernplattform für Entwickler</span>
-        <h1 className="dl-hero-title">
-          Lerne modern.<br />Lerne jetzt.
-        </h1>
-        <p className="dl-hero-sub">
-          Von HTML bis React – strukturierte Kurse mit
-          Praxisprojekten und IHK-Zertifizierung.
-        </p>
-        <div className="dl-hero-btns">
-          <button className="dl-btn-primary" onClick={() => navigate("/register")}>
-            Jetzt starten
-          </button>
-          <button className="dl-btn-ghost" onClick={() => navigate("/kurse-entdecken")}>
-            Kurse ansehen
-          </button>
+
+        {/* DaisyUI Hero Komponente */}
+        <div className="hero min-h-screen" style={{ background: "transparent", minHeight:"auto", paddingBottom: "20px" }}>
+          <div className="hero-content text-center" style={{ paddingTop: 0}}>
+            <div className="max-w-2xl">
+
+              {/* Badge */}
+              <div className="badge badge-primary badge-outline mb-6 px-4 py-3 text-sm font-medium">
+                🎓 Lernplattform für Entwickler
+              </div>
+
+              {/* Titel */}
+              <h1 className="text-6xl font-bold mb-6 leading-tight" style={{ color: "var(--dl-text)" }}>
+                Lerne modern.<br />
+                <span className="text-transparent bg-clip-text"
+                  style={{ backgroundImage: "linear-gradient(135deg, var(--dl-violet-400), var(--dl-teal-400))" }}>
+                  Lerne jetzt.
+                </span>
+              </h1>
+
+              {/* Subtext */}
+              <p className="text-lg mb-8 leading-relaxed" style={{ color: "var(--dl-text-muted)" }}>
+                Von HTML bis React – strukturierte Kurse mit
+                Praxisprojekten und IHK-Zertifizierung.
+              </p>
+
+              {/* Buttons */}
+              <div className="flex gap-4 justify-center flex-wrap mb-12">
+                <button
+                  className="btn btn-primary btn-lg"
+                  onClick={() => navigate("/register")}
+                >
+                  Jetzt starten
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </button>
+                <button
+                  className="btn btn-outline btn-lg"
+                  style={{ borderColor: "var(--dl-violet-400)", color: "var(--dl-violet-400)" }}
+                  onClick={() => navigate("/kurse-entdecken")}
+                >
+                  Kurse ansehen
+                </button>
+              </div>
+
+              {/* Stats */}
+              <div className="stats stats-horizontal shadow-lg"
+                style={{ background: "rgba(255,255,255,0.08)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.12)" }}>
+                <div className="stat">
+                  <div className="stat-value text-2xl" style={{ color: "var(--dl-violet-400)" }}>4</div>
+                  <div className="stat-desc" style={{ color: "var(--dl-text-muted)" }}>Kurskategorien</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-value text-2xl" style={{ color: "var(--dl-teal-400)" }}>IHK</div>
+                  <div className="stat-desc" style={{ color: "var(--dl-text-muted)" }}>Zertifiziert</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-value text-2xl" style={{ color: "var(--dl-amber-400, #f59e0b)" }}>100%</div>
+                  <div className="stat-desc" style={{ color: "var(--dl-text-muted)" }}>Praxisorientiert</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
+
       </main>
+     
 
       {/* ── Kontakt-Zone ────────────────────────────────────────────────────── */}
       <div className="dl-contact-zone">
