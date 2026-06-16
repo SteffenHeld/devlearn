@@ -13,9 +13,10 @@ const bannerColor: Record<string, string> = {
   "Framer":        "--coral",
 };
 const bannerEmoji: Record<string, string> = {
-  "HTML/CSS/JS": "🌐",
-  "Figma":       "🎨",
-  "Framer":      "🪄",
+  "HTML/CSS/JS":   "🌐",
+  "React/Vite/TS": "⚛️", 
+  "Figma":         "🎨",
+  "Framer":        "🪄",
 };
 
 const IconArrow = () => (
