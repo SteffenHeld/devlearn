@@ -7,53 +7,81 @@ import { useThemeToggle } from "../../context/ThemeContext";
 import DevLearnLogo from "../../components/ui/DevLearnLogo";
 import ThemeToggleButton from "../../components/ui/ThemeToggleButton";
 
+// ── Validierung ───────────────────────────────────────────────
+function validateName(name: string): string {
+  if (!name.trim()) return "Bitte Namen eingeben.";
+  if (name.trim().length < 2) return "Der Name muss mindestens 2 Zeichen haben.";
+  return "";
+}
+
+function validateEmail(email: string): string {
+  if (!email.trim()) return "Bitte E-Mail-Adresse eingeben.";
+  if (!email.includes("@") || !email.includes(".")) return "Bitte eine gültige E-Mail-Adresse eingeben.";
+  return "";
+}
+
+function validatePassword(password: string): string {
+  if (!password) return "Bitte Passwort eingeben.";
+  if (password.length < 6) return "Das Passwort muss mindestens 6 Zeichen haben.";
+  return "";
+}
+
+function validateConfirm(password: string, confirm: string): string {
+  if (!confirm) return "Bitte Passwort bestätigen.";
+  if (password !== confirm) return "Die Passwörter stimmen nicht überein.";
+  return "";
+}
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
 
-  const [name, setName]       = useState<string>("");
-  const [email, setEmail]     = useState<string>("");
+  const [name, setName]         = useState<string>("");
+  const [email, setEmail]       = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [confirm, setConfirm] = useState<string>("");
-  const [error, setError]     = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
+  const [confirm, setConfirm]   = useState<string>("");
+  const [error, setError]       = useState<string>("");
+  const [loading, setLoading]   = useState<boolean>(false);
+
+  // Feldfehler (direkt am Input)
+  const [nameError, setNameError]       = useState<string>("");
+  const [emailError, setEmailError]     = useState<string>("");
+  const [passwordError, setPasswordError] = useState<string>("");
+  const [confirmError, setConfirmError] = useState<string>("");
+
+  // onBlur → sofort validieren
+  const handleNameBlur     = () => setNameError(validateName(name));
+  const handleEmailBlur    = () => setEmailError(validateEmail(email));
+  const handlePasswordBlur = () => setPasswordError(validatePassword(password));
+  const handleConfirmBlur  = () => setConfirmError(validateConfirm(password, confirm));
 
   const handleRegister = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     setError("");
 
-    if (password !== confirm) {
-      setError("Die Passwörter stimmen nicht überein.");
-      return;
-    }
-    if (password.length < 6) {
-      setError("Das Passwort muss mindestens 6 Zeichen lang sein.");
-      return;
-    }
+    // Alle Felder validieren
+    const nErr = validateName(name);
+    const eErr = validateEmail(email);
+    const pErr = validatePassword(password);
+    const cErr = validateConfirm(password, confirm);
+    setNameError(nErr);
+    setEmailError(eErr);
+    setPasswordError(pErr);
+    setConfirmError(cErr);
+    if (nErr || eErr || pErr || cErr) return;
 
     setLoading(true);
     try {
-      // 1. Firebase Auth User anlegen
       const cred = await createUserWithEmailAndPassword(auth, email, password);
-
-      // 2. Displayname setzen
       await updateProfile(cred.user, { displayName: name });
-
-      // 3. User-Dokument in Firestore anlegen mit Rolle "student"
-      //    Ohne diesen Schritt findet AuthContext keine Rolle
-      //    und ProtectedRoute blockiert alle geschützten Routen
       await setDoc(doc(db, "users", cred.user.uid), {
         name,
         email,
         role: "student",
         createdAt: new Date().toISOString(),
       });
-
-      // 4. Kurzer Delay damit onAuthStateChanged feuern kann
-      //    bevor React Router zur Dashboard-Route navigiert
       await new Promise((resolve) => setTimeout(resolve, 300));
-
       navigate("/dashboard");
     } catch {
       setError("Registrierung fehlgeschlagen. Bitte versuche es erneut.");
@@ -74,11 +102,8 @@ export default function RegisterPage() {
       </svg>
 
       <div className="dl-auth-content">
-
-        {/* Logo */}
         <DevLearnLogo linkTo="/" className="dl-auth-logo" />
 
-        {/* Card */}
         <div className="dl-form-card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
             <div>
@@ -89,6 +114,8 @@ export default function RegisterPage() {
           </div>
 
           <form onSubmit={handleRegister} noValidate>
+
+            {/* Name */}
             <div className="dl-field">
               <label htmlFor="reg-name">Name</label>
               <input
@@ -96,11 +123,18 @@ export default function RegisterPage() {
                 type="text"
                 placeholder="Max Mustermann"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
+                onChange={(e) => { setName(e.target.value); setNameError(""); }}
+                onBlur={handleNameBlur}
+                aria-invalid={!!nameError}
+                aria-describedby={nameError ? "reg-name-error" : undefined}
                 autoComplete="name"
               />
+              {nameError && (
+                <p id="reg-name-error" className="dl-field-error">{nameError}</p>
+              )}
             </div>
+
+            {/* E-Mail */}
             <div className="dl-field">
               <label htmlFor="reg-email">E-Mail</label>
               <input
@@ -108,11 +142,18 @@ export default function RegisterPage() {
                 type="email"
                 placeholder="du@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
+                onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+                onBlur={handleEmailBlur}
+                aria-invalid={!!emailError}
+                aria-describedby={emailError ? "reg-email-error" : undefined}
                 autoComplete="email"
               />
+              {emailError && (
+                <p id="reg-email-error" className="dl-field-error">{emailError}</p>
+              )}
             </div>
+
+            {/* Passwort */}
             <div className="dl-field">
               <label htmlFor="reg-password">Passwort</label>
               <input
@@ -120,11 +161,18 @@ export default function RegisterPage() {
                 type="password"
                 placeholder="Mindestens 6 Zeichen"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+                onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }}
+                onBlur={handlePasswordBlur}
+                aria-invalid={!!passwordError}
+                aria-describedby={passwordError ? "reg-password-error" : undefined}
                 autoComplete="new-password"
               />
+              {passwordError && (
+                <p id="reg-password-error" className="dl-field-error">{passwordError}</p>
+              )}
             </div>
+
+            {/* Passwort bestätigen */}
             <div className="dl-field">
               <label htmlFor="reg-confirm">Passwort bestätigen</label>
               <input
@@ -132,10 +180,15 @@ export default function RegisterPage() {
                 type="password"
                 placeholder="••••••••"
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
-                required
+                onChange={(e) => { setConfirm(e.target.value); setConfirmError(""); }}
+                onBlur={handleConfirmBlur}
+                aria-invalid={!!confirmError}
+                aria-describedby={confirmError ? "reg-confirm-error" : undefined}
                 autoComplete="new-password"
               />
+              {confirmError && (
+                <p id="reg-confirm-error" className="dl-field-error">{confirmError}</p>
+              )}
             </div>
 
             {error && <p className="dl-alert dl-alert--error">{error}</p>}

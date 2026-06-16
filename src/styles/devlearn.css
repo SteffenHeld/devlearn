@@ -1391,3 +1391,24 @@ body.dl-dark.dl-teacher .dl-theme-toggle:hover {
         -webkit-overflow-scrolling: touch;
     }
 }
+
+/* Feldfehler direkt unter dem Input */
+.dl-field-error {
+    font-size: 12px;
+    color: var(--dl-coral-500, #ef4444);
+    margin: 4px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dl-field-error::before {
+    content: "⚠";
+    font-size: 11px;
+}
+
+/* Input mit Fehler – roter Rahmen */
+.dl-field input[aria-invalid="true"] {
+    border-color: var(--dl-coral-400, #f87171);
+    outline-color: var(--dl-coral-400, #f87171);
+}
