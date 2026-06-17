@@ -98,4 +98,4 @@ VITE_FIREBASE_APP_ID=
 ## Entwickelt von
 
 Steffen — Syntax Institut  
-Ausbildung: Fachinformatiker für Anwendungsentwicklung (IHK)
+Ausbildung: Web Developer
