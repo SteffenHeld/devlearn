@@ -95,7 +95,14 @@ export default function LandingPage() {
             <div className="max-w-2xl">
 
               {/* Badge */}
-              <div className="badge badge-primary badge-outline mb-6 px-4 py-3 text-sm font-medium">
+              <div
+                className="badge mb-6 px-4 py-3 text-sm font-medium"
+                style={{
+                  background: "var(--lp-accent-bg)",
+                  border: "1px solid var(--lp-accent-border)",
+                  color: "var(--lp-accent-dark)",
+                }}
+              >
                 🎓 Lernplattform für Entwickler
               </div>
 
@@ -103,7 +110,7 @@ export default function LandingPage() {
               <h1 className="text-6xl font-bold mb-6 leading-tight" style={{ color: "var(--dl-text)" }}>
                 Lerne modern.<br />
                 <span className="text-transparent bg-clip-text"
-                  style={{ backgroundImage: "linear-gradient(135deg, var(--dl-violet-400), var(--dl-teal-400))" }}>
+                  style={{ backgroundImage: "linear-gradient(135deg, var(--lp-accent), var(--lp-accent-dark))" }}>
                   Lerne jetzt.
                 </span>
               </h1>
@@ -117,17 +124,17 @@ export default function LandingPage() {
               {/* Buttons */}
               <div className="flex gap-4 justify-center flex-wrap mb-12">
                 <button
-                  className="btn btn-primary btn-lg"
-                  onClick={() => navigate("/register")}
-                >
-                  Jetzt starten
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-                  </svg>
-                </button>
+                    className="btn btn-lg dl-cta-btn"
+                    onClick={() => navigate("/register")}
+                  >
+                    Jetzt starten
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+                    </svg>
+                  </button>
                 <button
                   className="btn btn-outline btn-lg"
-                  style={{ borderColor: "var(--dl-violet-400)", color: "var(--dl-violet-400)" }}
+                  style={{ borderColor: "var(--lp-accent)", color: "var(--lp-accent)" }}
                   onClick={() => navigate("/kurse-entdecken")}
                 >
                   Kurse ansehen

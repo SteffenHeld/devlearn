@@ -506,6 +506,21 @@
     border-color: #2e2b50;
 }
 
+.dl-cta-btn {
+    background: var(--lp-accent);
+    color: #fff;
+    border: none;
+    transition: background 0.3s, transform 0.1s;
+}
+
+.dl-cta-btn:hover {
+    background: var(--lp-accent-dark);
+}
+
+.dl-cta-btn:active {
+    transform: scale(0.98);
+}
+
 /* ── Formular-Felder ─────────────────────────────────────────── */
 .dl-field {
     margin-bottom: 12px;

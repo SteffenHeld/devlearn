@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import { useAuth } from "../../context/AuthContext";
 import { useProgress } from "../../hooks/useProgress";
 import { useThemeToggle } from "../../context/ThemeContext";
 import type { Lesson } from "../../types";
-import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import Sidebar from "../../components/ui/Sidebar";
 import PageBreadcrumb from "../../components/ui/PageBreadcrumb";
 
-/* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconBack = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
@@ -44,33 +43,20 @@ const IconClose = () => (
     <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
-const IconSun = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-  </svg>
-);
-const IconMoon = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-  </svg>
-);
 
 export default function LessonPage() {
-  const { kursId, modulId, lektionId } = useParams<{
-    kursId: string;
+  const { kursSlug, modulId, lektionId } = useParams<{
+    kursSlug: string;
     modulId: string;
     lektionId: string;
   }>();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { progress, markLessonComplete } = useProgress();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [courseId, setCourseId] = useState<string | null>(null);
   const [lesson, setLesson]   = useState<Lesson | null>(null);
   const [saving, setSaving]   = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -81,10 +67,19 @@ export default function LessonPage() {
   };
 
   useEffect(() => {
-    if (!kursId || !modulId || !lektionId || !user) return;
+    if (!kursSlug || !modulId || !lektionId || !user) return;
     async function fetchLesson(): Promise<void> {
+      const coursesQuery = query(collection(db, "courses"), where("slug", "==", kursSlug));
+      const coursesSnap = await getDocs(coursesQuery);
+      if (coursesSnap.empty) {
+        setLoading(false);
+        return;
+      }
+      const realCourseId = coursesSnap.docs[0].id;
+      setCourseId(realCourseId);
+
       const lessonSnap = await getDoc(
-        doc(db, "courses", kursId!, "modules", modulId!, "lessons", lektionId!)
+        doc(db, "courses", realCourseId, "modules", modulId!, "lessons", lektionId!)
       );
       if (lessonSnap.exists()) {
         setLesson({ id: lessonSnap.id, ...(lessonSnap.data() as Omit<Lesson, "id">) });
@@ -92,22 +87,66 @@ export default function LessonPage() {
       setLoading(false);
     }
     fetchLesson();
-  }, [kursId, modulId, lektionId, user]);
+  }, [kursSlug, modulId, lektionId, user]);
 
   const completed =
-    progress[kursId ?? ""]?.completedLessons?.includes(lektionId ?? "") ?? false;
+    progress[courseId ?? ""]?.completedLessons?.includes(lektionId ?? "") ?? false;
 
   async function handleComplete(): Promise<void> {
-    if (!kursId || !modulId || !lektionId || saving) return;
+    if (!courseId || !modulId || !lektionId || saving) return;
     setSaving(true);
-    await markLessonComplete(kursId, modulId, lektionId);
+    await markLessonComplete(courseId, modulId, lektionId);
     setSaving(false);
   }
+
+  const contextItem = (
+    <>
+      <button className="dl-sidebar-link" onClick={() => handleNavigate(`/kurse/${kursSlug}`)}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Zum Kurs
+      </button>
+      <button className="dl-sidebar-link" onClick={() => handleNavigate(`/kurse/${kursSlug}/${modulId}`)}>
+        <span style={{
+          width: 20, height: 20, borderRadius: "50%",
+          background: "var(--dl-violet-50)", color: "var(--dl-violet-600)",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+          fontSize: 11, fontWeight: 600, flexShrink: 0,
+        }}>M</span>
+        Zum Modul
+      </button>
+      <div className="dl-sidebar-link active" style={{ cursor: "default" }} aria-current="page">
+        <span style={{
+          width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+          background: completed ? "var(--dl-teal-400)" : "var(--dl-violet-400)",
+          display: "inline-flex", alignItems: "center", justifyContent: "center",
+        }}>
+          {completed && (
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          )}
+        </span>
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {lesson?.title ?? "Lektion"}
+        </span>
+      </div>
+    </>
+  );
 
   if (loading) {
     return (
       <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
+        {sidebarOpen && <div className="dl-sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-hidden="true" />}
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} activePage="kurse" />
         <main className="dl-main">
+          <div className="dl-topbar">
+            <button className="dl-topbar-menu-btn" onClick={() => setSidebarOpen((p) => !p)} aria-label="Menü öffnen">
+              {sidebarOpen ? <IconClose /> : <IconMenu />}
+            </button>
+            <span className="dl-topbar-title">Lektion</span>
+          </div>
           <div className="dl-page">
             <div className="dl-empty">
               <p style={{ color: "var(--dl-text-faint)", fontSize: 14 }}>Lektion wird geladen…</p>
@@ -121,80 +160,20 @@ export default function LessonPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
       {sidebarOpen && (
-        <div
-          className="dl-sidebar-overlay"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="dl-sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
       )}
 
-      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
-        <DevLearnLogo />
-        <p className="dl-sidebar-section">Navigation</p>
-        <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => handleNavigate("/dashboard")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-            </svg>
-            Dashboard
-          </button>
-          <button className="dl-sidebar-link" onClick={() => handleNavigate("/kurse")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-            Alle Kurse
-          </button>
-          <button className="dl-sidebar-link" onClick={() => handleNavigate(`/kurse/${kursId}`)}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            Zum Kurs
-          </button>
-          <button className="dl-sidebar-link" onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}`)}>
-            <span style={{
-              width: 20, height: 20, borderRadius: "50%",
-              background: "var(--dl-violet-50)", color: "var(--dl-violet-600)",
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              fontSize: 11, fontWeight: 600, flexShrink: 0,
-            }}>M</span>
-            Zum Modul
-          </button>
-          <div className="dl-sidebar-link active" style={{ cursor: "default" }} aria-current="page">
-            <span style={{
-              width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-              background: completed ? "var(--dl-teal-400)" : "var(--dl-violet-400)",
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-            }}>
-              {completed && (
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              )}
-            </span>
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {lesson?.title ?? "Lektion"}
-            </span>
-          </div>
-          <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
-          <button className="dl-sidebar-link" onClick={toggleTheme}>
-            {mode === "dark" ? <IconSun /> : <IconMoon />}
-            {mode === "dark" ? "Light Mode" : "Dark Mode"}
-          </button>
-        </nav>
-      </aside>
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        activePage="none"
+        contextItem={contextItem}
+      />
 
-      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <button
-            className="dl-topbar-menu-btn"
-            onClick={() => setSidebarOpen((prev) => !prev)}
-            aria-label="Menü öffnen"
-          >
+          <button className="dl-topbar-menu-btn" onClick={() => setSidebarOpen((prev) => !prev)} aria-label="Menü öffnen">
             {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
           <span className="dl-topbar-title">{lesson?.title ?? "Lektion"}</span>
@@ -203,14 +182,12 @@ export default function LessonPage() {
         <div className="dl-page">
           <PageBreadcrumb items={[
             { label: "Kurse",  onClick: () => handleNavigate("/kurse") },
-            { label: "Kurs",   onClick: () => handleNavigate(`/kurse/${kursId}`) },
-            { label: "Modul",  onClick: () => handleNavigate(`/kurse/${kursId}/${modulId}`) },
+            { label: "Kurs",   onClick: () => handleNavigate(`/kurse/${kursSlug}`) },
+            { label: "Modul",  onClick: () => handleNavigate(`/kurse/${kursSlug}/${modulId}`) },
             { label: lesson?.title ?? "Lektion" },
           ]} />
 
           <div className="dl-lesson-layout">
-
-            {/* ── Linke Spalte: Inhalt ─────────────────────────────────────── */}
             <div>
               <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 8, flexWrap: "wrap" }}>
                 <h1 className="dl-page-title" style={{ marginBottom: 0 }}>{lesson?.title}</h1>
@@ -253,7 +230,7 @@ export default function LessonPage() {
                 {completed && (
                   <button
                     className="dl-btn dl-btn--ghost"
-                    onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}`)}
+                    onClick={() => handleNavigate(`/kurse/${kursSlug}/${modulId}`)}
                     style={{ padding: "12px 24px" }}
                   >
                     <IconNext /> Weiter zum Modul
@@ -262,7 +239,6 @@ export default function LessonPage() {
               </div>
             </div>
 
-            {/* ── Rechte Spalte: Status-Card ───────────────────────────────── */}
             <aside>
               <div className="dl-card">
                 <p style={{
@@ -305,14 +281,14 @@ export default function LessonPage() {
                   <button
                     className="dl-btn dl-btn--ghost"
                     style={{ justifyContent: "flex-start", fontSize: 13 }}
-                    onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}`)}
+                    onClick={() => handleNavigate(`/kurse/${kursSlug}/${modulId}`)}
                   >
                     <IconBack /> Zurück zum Modul
                   </button>
                   <button
                     className="dl-btn dl-btn--ghost"
                     style={{ justifyContent: "flex-start", fontSize: 13 }}
-                    onClick={() => handleNavigate(`/kurse/${kursId}`)}
+                    onClick={() => handleNavigate(`/kurse/${kursSlug}`)}
                   >
                     <IconBack /> Zurück zum Kurs
                   </button>

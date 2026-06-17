@@ -1,38 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext";
 import useCourses from "../../hooks/useCourses";
 import { useProgress } from "../../hooks/useProgress";
 import type { CourseProgress } from "../../types";
-import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import Sidebar from "../../components/ui/Sidebar";
 import CourseCard from "../../components/ui/CourseCard";
 
-/* ── Icons ───────────────────────────────────────────────────────────────────── */
-const IconDashboard = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-  </svg>
-);
-const IconBook = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-  </svg>
-);
-const IconAward = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
-  </svg>
-);
-const IconLogout = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-    <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-  </svg>
-);
+/* ── Icons ───────────────────────────────────────────────────────────────── */
 const IconMenu = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="3" y1="6" x2="21" y2="6"/>
@@ -46,35 +22,15 @@ const IconClose = () => (
     <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
-const IconSun = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-  </svg>
-);
-const IconMoon = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-  </svg>
-);
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { user } = useAuth();
   const { courses } = useCourses();
   const { progress } = useProgress();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const handleLogout = async () => {
-    setSidebarOpen(false);
-    navigate("/");
-    await signOut(auth);
-  };
 
   const handleNavigate = (path: string) => {
     setSidebarOpen(false);
@@ -82,12 +38,6 @@ export default function StudentDashboard() {
   };
 
   const firstName = user?.displayName?.split(" ")[0] ?? "Student";
-  const initials = (user?.displayName ?? "S")
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
 
   const completedCourses = courses.filter((c) => {
     const p: CourseProgress | undefined = progress[c.id];
@@ -113,7 +63,6 @@ export default function StudentDashboard() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
       {sidebarOpen && (
         <div
           className="dl-sidebar-overlay"
@@ -122,52 +71,10 @@ export default function StudentDashboard() {
         />
       )}
 
-      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside
-        className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`}
-        aria-label="Navigation"
-      >
-        <DevLearnLogo />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} activePage="dashboard" />
 
-        <p className="dl-sidebar-section">Menü</p>
-        <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link active" aria-current="page">
-            <IconDashboard /> Dashboard
-          </button>
-          <button className="dl-sidebar-link" onClick={() => handleNavigate("/kurse")}>
-            <IconBook /> Kurse
-          </button>
-          <button className="dl-sidebar-link" disabled style={{ opacity: 0.4, cursor: "not-allowed" }}>
-            <IconAward /> Zertifikate
-          </button>
-
-          <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
-
-          <button className="dl-sidebar-link" onClick={toggleTheme}>
-            {mode === "dark" ? <IconSun /> : <IconMoon />}
-            {mode === "dark" ? "Light Mode" : "Dark Mode"}
-          </button>
-
-          <button className="dl-sidebar-link" onClick={handleLogout} style={{ color: "var(--dl-coral-400)" }}>
-            <IconLogout /> Abmelden
-          </button>
-        </nav>
-
-        <div className="dl-sidebar-footer">
-          <div className="dl-sidebar-user">
-            <div className="dl-avatar">{initials}</div>
-            <div>
-              <div className="dl-sidebar-user-name">{user?.displayName ?? "Student"}</div>
-              <div className="dl-sidebar-user-role">Student</div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* ── Hauptbereich ─────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          {/* Hamburger (nur Mobile) */}
           <button
             className="dl-topbar-menu-btn"
             onClick={() => setSidebarOpen((prev) => !prev)}
@@ -175,7 +82,6 @@ export default function StudentDashboard() {
           >
             {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
-
           <span className="dl-topbar-title">Übersicht</span>
         </div>
 
@@ -185,7 +91,6 @@ export default function StudentDashboard() {
             <p className="dl-page-sub">Hier ist dein aktueller Lernfortschritt.</p>
           </div>
 
-          {/* Stats */}
           <div className="dl-stats-grid">
             <div className="dl-stat">
               <p className="dl-stat-label">Kurse gesamt</p>
@@ -210,7 +115,6 @@ export default function StudentDashboard() {
             </div>
           </div>
 
-          {/* Kurse */}
           <div className="dl-section">
             <div className="dl-section-header">
               <h2 className="dl-section-title">Deine Kurse</h2>

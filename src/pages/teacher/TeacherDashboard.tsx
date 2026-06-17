@@ -1,32 +1,11 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "../../firebase/firebase";
 import { useAuth } from "../../context/AuthContext";
 import useCourses from "../../hooks/useCourses";
 import type { Course } from "../../types";
-import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import Sidebar from "../../components/ui/Sidebar";
 import { useThemeToggle } from "../../context/ThemeContext";
 
-/* ── Icons ───────────────────────────────────────────────────────────────────── */
-const IconDashboard = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-    <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-  </svg>
-);
-const IconBook = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-  </svg>
-);
-const IconUsers = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-    <circle cx="9" cy="7" r="4"/>
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-  </svg>
-);
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
@@ -38,37 +17,16 @@ const IconEdit = () => (
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
   </svg>
 );
-const IconLogout = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
-  </svg>
-);
 const IconX = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
-
 const IconMenu = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <line x1="3" y1="6" x2="21" y2="6"/>
     <line x1="3" y1="12" x2="21" y2="12"/>
     <line x1="3" y1="18" x2="21" y2="18"/>
-  </svg>
-);
-
-const IconSun = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-  </svg>
-);
-const IconMoon = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
   </svg>
 );
 
@@ -80,10 +38,9 @@ type Tab = "courses" | "students";
 
 export default function TeacherDashboard() {
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  // Korrekter Import aus context/AuthContext
   const { user } = useAuth();
   const { courses, addCourse } = useCourses();
   const [activeTab, setActiveTab] = useState<Tab>("courses");
@@ -94,22 +51,11 @@ export default function TeacherDashboard() {
   const [newDesc, setNewDesc]         = useState("");
   const [saving, setSaving]           = useState(false);
   const [formError, setFormError] = useState("");
-  
+
   useEffect(() => {
-  document.body.classList.add("dl-teacher");
-  return () => document.body.classList.remove("dl-teacher");
+    document.body.classList.add("dl-teacher");
+    return () => document.body.classList.remove("dl-teacher");
   }, []);
-
-  const handleLogout = async () => {
-  setSidebarOpen(false);
-  navigate("/");
-  await signOut(auth);
-  };
-
-  const handleNavigate = (path: string) => {
-  setSidebarOpen(false);
-  navigate(path);
-  };
 
   const handleCreateCourse = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,7 +69,6 @@ export default function TeacherDashboard() {
       });
       setNewTitle(""); setNewCategory("HTML/CSS/JS"); setNewDesc("");
       setShowForm(false);
-      // Direkt zur Kursbearbeitungs-Seite navigieren wenn addCourse die ID zurückgibt
       if (newCourse?.id) navigate(`/teacher/kurse/${newCourse.id}`);
       else navigate("/teacher/kurse");
     } catch {
@@ -133,11 +78,6 @@ export default function TeacherDashboard() {
     }
   };
 
-  const initials = (user?.displayName ?? "L")
-    .split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
-
-  // moduleCount/lessonCount können in alten Firestore-Dokumenten fehlen
-  // daher direkt aus den geladenen modules/lessons zählen
   const totalModules = courses.reduce(
     (sum, c) => sum + (c.modules?.length ?? 0), 0
   );
@@ -148,64 +88,22 @@ export default function TeacherDashboard() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
       {sidebarOpen && (
-        <div
-          className="dl-sidebar-overlay"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="dl-sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
       )}
 
-
-      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
-        <DevLearnLogo />
-        <p className="dl-sidebar-section">Lehrer-Panel</p>
-        <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link active" aria-current="page">
-            <IconDashboard /> Dashboard
-          </button>
-          <button className="dl-sidebar-link" onClick={() => handleNavigate("/teacher/kurse")}>
-            <IconBook /> Kurse verwalten
-          </button>
-          {/* Schüler-Verwaltung noch nicht implementiert — deaktiviert */}
-          <button className="dl-sidebar-link" disabled style={{ opacity: 0.4, cursor: "not-allowed" }}>
-            <IconUsers /> Schüler
-          </button>
-
-          {/* Trennlinie + Abmelden direkt in der Nav */}
-          <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
-          <button className="dl-sidebar-link" onClick={toggleTheme}>
-            {mode === "dark" ? <IconSun /> : <IconMoon />}
-            {mode === "dark" ? "Light Mode" : "Dark Mode"}
-          </button>
-          <button className="dl-sidebar-link" onClick={handleLogout} style={{ color: "var(--dl-coral-400)" }}>
-            <IconLogout /> Abmelden
-          </button>
-        </nav>
-        
-        <div className="dl-sidebar-footer">
-          <div className="dl-sidebar-user" style={{ marginTop: 8 }}>
-            <div className="dl-avatar">{initials}</div>
-            <div>
-              <div className="dl-sidebar-user-name">{user?.displayName ?? "Lehrer"}</div>
-              <div className="dl-sidebar-user-role">Lehrer</div>
-            </div>
-          </div>
-        </div>
-      </aside>
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} activePage="dashboard" />
 
       <main className="dl-main">
         <div className="dl-topbar">
-            <button
-              className="dl-topbar-menu-btn"
-              onClick={() => setSidebarOpen((prev) => !prev)}
-              aria-label="Menü öffnen"
-            >
-              {sidebarOpen ? <IconX /> : <IconMenu />}
-            </button>
-            <span className="dl-topbar-title">Lehrer-Dashboard</span>
+          <button
+            className="dl-topbar-menu-btn"
+            onClick={() => setSidebarOpen((prev) => !prev)}
+            aria-label="Menü öffnen"
+          >
+            {sidebarOpen ? <IconX /> : <IconMenu />}
+          </button>
+          <span className="dl-topbar-title">Lehrer-Dashboard</span>
           <div className="dl-topbar-actions">
             <button className="dl-btn dl-btn--primary dl-btn--sm" onClick={() => setShowForm(true)}>
               <IconPlus /> Neuer Kurs
@@ -219,7 +117,6 @@ export default function TeacherDashboard() {
             <p className="dl-page-sub">Verwalte deine Kurse, Module und Lektionen.</p>
           </div>
 
-          {/* Stats */}
           <div className="dl-stats-grid">
             <div className="dl-stat">
               <p className="dl-stat-label">Kurse</p>
@@ -227,9 +124,7 @@ export default function TeacherDashboard() {
             </div>
             <div className="dl-stat">
               <p className="dl-stat-label">Module</p>
-              <p className="dl-stat-value">
-                {totalModules}
-              </p>
+              <p className="dl-stat-value">{totalModules}</p>
             </div>
             <div className="dl-stat">
               <p className="dl-stat-label">Lektionen</p>
@@ -237,7 +132,6 @@ export default function TeacherDashboard() {
             </div>
           </div>
 
-          {/* Neuer-Kurs-Formular — inline eingeblendet */}
           {showForm && (
             <div className="dl-card" style={{ marginBottom: 24, borderColor: "var(--dl-violet-200)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
@@ -292,7 +186,6 @@ export default function TeacherDashboard() {
             </div>
           )}
 
-          {/* Tabs */}
           <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: "1px solid var(--dl-border)" }}>
             {(["courses", "students"] as Tab[]).map((tab) => (
               <button
@@ -313,7 +206,6 @@ export default function TeacherDashboard() {
             ))}
           </div>
 
-          {/* Kurse Tab */}
           {activeTab === "courses" && (
             <div className="dl-section">
               {courses.length === 0 && !showForm ? (
@@ -364,7 +256,6 @@ export default function TeacherDashboard() {
             </div>
           )}
 
-          {/* Schüler Tab — noch nicht implementiert */}
           {activeTab === "students" && (
             <div className="dl-empty">
               <div className="dl-empty-icon">👥</div>

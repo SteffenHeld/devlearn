@@ -1,15 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { doc, getDoc, collection, getDocs, orderBy, query } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, orderBy, query, where } from "firebase/firestore";
 import { db } from "../../firebase/firebase";
 import { useThemeToggle } from "../../context/ThemeContext";
 import { useProgress } from "../../hooks/useProgress";
 import type { Module, Lesson } from "../../types";
-import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import Sidebar from "../../components/ui/Sidebar";
 import ProgressBar from "../../components/ui/ProgressBar";
 import PageBreadcrumb from "../../components/ui/PageBreadcrumb";
 
-/* ── Icons ───────────────────────────────────────────────────────────────────── */
 const IconPlay = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true">
     <polygon points="5 3 19 12 5 21 5 3"/>
@@ -28,28 +27,16 @@ const IconClose = () => (
     <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
-const IconSun = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-  </svg>
-);
-const IconMoon = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-  </svg>
-);
 
 export default function ModuleDetailPage() {
-  const { kursId, modulId } = useParams<{ kursId: string; modulId: string }>();
+  const { kursSlug, modulId } = useParams<{ kursSlug: string; modulId: string }>();
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { progress } = useProgress();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [courseId, setCourseId] = useState<string | null>(null);
   const [module, setModule]   = useState<Module | null>(null);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -60,14 +47,24 @@ export default function ModuleDetailPage() {
   };
 
   useEffect(() => {
-    if (!kursId || !modulId) return;
+    if (!kursSlug || !modulId) return;
     async function fetchData(): Promise<void> {
-      const moduleSnap = await getDoc(doc(db, "courses", kursId!, "modules", modulId!));
+      // Slug → echte Firestore-ID auflösen (Module/Lektionen liegen unter der echten ID)
+      const coursesQuery = query(collection(db, "courses"), where("slug", "==", kursSlug));
+      const coursesSnap = await getDocs(coursesQuery);
+      if (coursesSnap.empty) {
+        setLoading(false);
+        return;
+      }
+      const realCourseId = coursesSnap.docs[0].id;
+      setCourseId(realCourseId);
+
+      const moduleSnap = await getDoc(doc(db, "courses", realCourseId, "modules", modulId!));
       if (moduleSnap.exists()) {
         setModule({ id: moduleSnap.id, ...(moduleSnap.data() as Omit<Module, "id">) });
       }
       const lessonsQuery = query(
-        collection(db, "courses", kursId!, "modules", modulId!, "lessons"),
+        collection(db, "courses", realCourseId, "modules", modulId!, "lessons"),
         orderBy("order")
       );
       const lessonsSnap = await getDocs(lessonsQuery);
@@ -75,19 +72,75 @@ export default function ModuleDetailPage() {
       setLoading(false);
     }
     fetchData();
-  }, [kursId, modulId]);
+  }, [kursSlug, modulId]);
 
-  const completedLessons: string[] = progress[kursId ?? ""]?.completedLessons ?? [];
+  const completedLessons: string[] = progress[courseId ?? ""]?.completedLessons ?? [];
   const completedIds = new Set(completedLessons);
   const done  = lessons.filter((l) => completedIds.has(l.id)).length;
   const total = lessons.length;
   const pct   = total > 0 ? Math.round((done / total) * 100) : 0;
   const nextLesson = lessons.find((l) => !completedIds.has(l.id));
 
+  const contextItem = (
+    <div className="dl-sidebar-link active" style={{ cursor: "default" }} aria-current="page">
+      <span style={{
+        width: 20, height: 20, borderRadius: "50%",
+        background: "var(--dl-violet-50)", color: "var(--dl-violet-600)",
+        display: "inline-flex", alignItems: "center", justifyContent: "center",
+        fontSize: 11, fontWeight: 600, flexShrink: 0,
+      }}>M</span>
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {module?.title ?? "Modul"}
+      </span>
+    </div>
+  );
+
+  const subNav = lessons.length > 0 ? (
+    <>
+      <p className="dl-sidebar-section" style={{ marginTop: 16 }}>Lektionen</p>
+      <nav className="dl-sidebar-nav">
+        {lessons.map((lesson, i) => {
+          const isDone = completedIds.has(lesson.id);
+          return (
+            <button
+              key={lesson.id}
+              className="dl-sidebar-link"
+              onClick={() => handleNavigate(`/kurse/${kursSlug}/${modulId}/${lesson.id}`)}
+              style={{ fontSize: 13, gap: 8 }}
+            >
+              <span style={{
+                width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
+                background: isDone ? "var(--dl-teal-400)" : "var(--dl-border)",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+              }}>
+                {isDone && (
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                )}
+              </span>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {i + 1}. {lesson.title}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+    </>
+  ) : undefined;
+
   if (loading) {
     return (
       <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
+        {sidebarOpen && <div className="dl-sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-hidden="true" />}
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} activePage="kurse" />
         <main className="dl-main">
+          <div className="dl-topbar">
+            <button className="dl-topbar-menu-btn" onClick={() => setSidebarOpen((p) => !p)} aria-label="Menü öffnen">
+              {sidebarOpen ? <IconClose /> : <IconMenu />}
+            </button>
+            <span className="dl-topbar-title">Modul</span>
+          </div>
           <div className="dl-page">
             <div className="dl-empty">
               <p style={{ color: "var(--dl-text-faint)", fontSize: 14 }}>Lektionen werden geladen…</p>
@@ -98,103 +151,48 @@ export default function ModuleDetailPage() {
     );
   }
 
+  if (!courseId) {
+    return (
+      <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
+        {sidebarOpen && <div className="dl-sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-hidden="true" />}
+        <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} activePage="kurse" />
+        <main className="dl-main">
+          <div className="dl-topbar">
+            <button className="dl-topbar-menu-btn" onClick={() => setSidebarOpen((p) => !p)} aria-label="Menü öffnen">
+              {sidebarOpen ? <IconClose /> : <IconMenu />}
+            </button>
+            <span className="dl-topbar-title">Modul</span>
+          </div>
+          <div className="dl-page">
+            <div className="dl-empty">
+              <div className="dl-empty-icon">🔍</div>
+              <p className="dl-empty-text">Kurs nicht gefunden.</p>
+              <button className="dl-btn dl-btn--ghost" onClick={() => navigate("/kurse")}>Zurück zu den Kursen</button>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
       {sidebarOpen && (
-        <div
-          className="dl-sidebar-overlay"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="dl-sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
       )}
 
-      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
-        <DevLearnLogo />
-        <p className="dl-sidebar-section">Navigation</p>
-        <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => handleNavigate("/dashboard")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-            </svg>
-            Dashboard
-          </button>
-          <button className="dl-sidebar-link" onClick={() => handleNavigate("/kurse")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-            Alle Kurse
-          </button>
-          <button className="dl-sidebar-link" onClick={() => handleNavigate(`/kurse/${kursId}`)}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
-            </svg>
-            Zum Kurs
-          </button>
-          <div className="dl-sidebar-link active" style={{ cursor: "default" }} aria-current="page">
-            <span style={{
-              width: 20, height: 20, borderRadius: "50%",
-              background: "var(--dl-violet-50)", color: "var(--dl-violet-600)",
-              display: "inline-flex", alignItems: "center", justifyContent: "center",
-              fontSize: 11, fontWeight: 600, flexShrink: 0,
-            }}>M</span>
-            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {module?.title ?? "Modul"}
-            </span>
-          </div>
-          <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
-          <button className="dl-sidebar-link" onClick={toggleTheme}>
-            {mode === "dark" ? <IconSun /> : <IconMoon />}
-            {mode === "dark" ? "Light Mode" : "Dark Mode"}
-          </button>
-        </nav>
+      <Sidebar
+        open={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+        activePage="none"
+        contextItem={contextItem}
+        subNav={subNav}
+      />
 
-        {lessons.length > 0 && (
-          <>
-            <p className="dl-sidebar-section" style={{ marginTop: 16 }}>Lektionen</p>
-            <nav className="dl-sidebar-nav">
-              {lessons.map((lesson, i) => {
-                const isDone = completedIds.has(lesson.id);
-                return (
-                  <button
-                    key={lesson.id}
-                    className="dl-sidebar-link"
-                    onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
-                    style={{ fontSize: 13, gap: 8 }}
-                  >
-                    <span style={{
-                      width: 18, height: 18, borderRadius: "50%", flexShrink: 0,
-                      background: isDone ? "var(--dl-teal-400)" : "var(--dl-border)",
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    }}>
-                      {isDone && (
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="20 6 9 17 4 12"/>
-                        </svg>
-                      )}
-                    </span>
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {i + 1}. {lesson.title}
-                    </span>
-                  </button>
-                );
-              })}
-            </nav>
-          </>
-        )}
-      </aside>
-
-      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
-          <button
-            className="dl-topbar-menu-btn"
-            onClick={() => setSidebarOpen((prev) => !prev)}
-            aria-label="Menü öffnen"
-          >
+          <button className="dl-topbar-menu-btn" onClick={() => setSidebarOpen((prev) => !prev)} aria-label="Menü öffnen">
             {sidebarOpen ? <IconClose /> : <IconMenu />}
           </button>
           <span className="dl-topbar-title">{module?.title ?? "Modul"}</span>
@@ -202,7 +200,7 @@ export default function ModuleDetailPage() {
             {nextLesson && (
               <button
                 className="dl-btn dl-btn--primary dl-btn--sm"
-                onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}/${nextLesson.id}`)}
+                onClick={() => handleNavigate(`/kurse/${kursSlug}/${modulId}/${nextLesson.id}`)}
               >
                 <IconPlay />
                 {done === 0 ? "Starten" : "Weiterlernen"}
@@ -214,7 +212,7 @@ export default function ModuleDetailPage() {
         <div className="dl-page">
           <PageBreadcrumb items={[
             { label: "Kurse", onClick: () => handleNavigate("/kurse") },
-            { label: "Kurs",  onClick: () => handleNavigate(`/kurse/${kursId}`) },
+            { label: "Kurs",  onClick: () => handleNavigate(`/kurse/${kursSlug}`) },
             { label: module?.title ?? "Modul" },
           ]} />
 
@@ -260,10 +258,10 @@ export default function ModuleDetailPage() {
                     <div
                       key={lesson.id}
                       className="dl-module-item"
-                      onClick={() => handleNavigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
+                      onClick={() => handleNavigate(`/kurse/${kursSlug}/${modulId}/${lesson.id}`)}
                       role="button"
                       tabIndex={0}
-                      onKeyDown={(e) => e.key === "Enter" && handleNavigate(`/kurse/${kursId}/${modulId}/${lesson.id}`)}
+                      onKeyDown={(e) => e.key === "Enter" && handleNavigate(`/kurse/${kursSlug}/${modulId}/${lesson.id}`)}
                       aria-label={`Lektion ${i + 1}: ${lesson.title}`}
                     >
                       <div className={`dl-module-num${isDone ? " dl-module-num--done" : ""}`}>

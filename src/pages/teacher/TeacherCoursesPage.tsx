@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useThemeToggle } from "../../context/ThemeContext";
 import useCourses from "../../hooks/useCourses";
 import type { Course } from "../../types";
-import DevLearnLogo from "../../components/ui/DevLearnLogo";
+import Sidebar from "../../components/ui/Sidebar";
 
 const IconPlus = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -34,20 +34,6 @@ const IconClose = () => (
     <line x1="6" y1="6" x2="18" y2="18"/>
   </svg>
 );
-const IconSun = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <circle cx="12" cy="12" r="5"/>
-    <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-    <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-  </svg>
-);
-const IconMoon = () => (
-  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-  </svg>
-);
 
 const CATEGORIES = ["HTML/CSS/JS", "React/Vite/TS", "Figma", "Framer"];
 const bannerEmoji: Record<string, string> = {
@@ -56,7 +42,7 @@ const bannerEmoji: Record<string, string> = {
 
 export default function TeacherCoursesPage() {
   const navigate = useNavigate();
-  const { mode, toggleTheme } = useThemeToggle();
+  const { mode } = useThemeToggle();
   const darkMode = mode === "dark";
   const { courses, addCourse } = useCourses();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -67,10 +53,10 @@ export default function TeacherCoursesPage() {
   const [description, setDescription] = useState<string>("");
   const [saving, setSaving]           = useState<boolean>(false);
   const [error, setError] = useState<string>("");
-  
+
   useEffect(() => {
-  document.body.classList.add("dl-teacher");
-  return () => document.body.classList.remove("dl-teacher");
+    document.body.classList.add("dl-teacher");
+    return () => document.body.classList.remove("dl-teacher");
   }, []);
 
   const handleNavigate = (path: string) => {
@@ -97,42 +83,12 @@ export default function TeacherCoursesPage() {
   return (
     <div className={`dl-shell${darkMode ? " dl-dark" : ""}`}>
 
-      {/* ── Overlay (Mobile) ─────────────────────────────────────────────────── */}
       {sidebarOpen && (
-        <div
-          className="dl-sidebar-overlay"
-          onClick={() => setSidebarOpen(false)}
-          aria-hidden="true"
-        />
+        <div className="dl-sidebar-overlay" onClick={() => setSidebarOpen(false)} aria-hidden="true" />
       )}
 
-      {/* ── Sidebar ──────────────────────────────────────────────────────────── */}
-      <aside className={`dl-sidebar${sidebarOpen ? " dl-sidebar--open" : ""}`} aria-label="Navigation">
-        <DevLearnLogo />
-        <p className="dl-sidebar-section">Lehrer-Panel</p>
-        <nav className="dl-sidebar-nav">
-          <button className="dl-sidebar-link" onClick={() => handleNavigate("/teacher/dashboard")}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-              <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-            </svg>
-            Dashboard
-          </button>
-          <button className="dl-sidebar-link active" aria-current="page">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-            Kurse verwalten
-          </button>
-           <div style={{ height: 1, background: "var(--dl-border)", margin: "8px 0" }} />
-            <button className="dl-sidebar-link" onClick={toggleTheme}>
-              {mode === "dark" ? <IconSun /> : <IconMoon />}
-              {mode === "dark" ? "Light Mode" : "Dark Mode"}
-            </button>
-        </nav>
-      </aside>
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} activePage="kurse" />
 
-      {/* ── Main ─────────────────────────────────────────────────────────────── */}
       <main className="dl-main">
         <div className="dl-topbar">
           <button
