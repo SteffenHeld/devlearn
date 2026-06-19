@@ -15,7 +15,6 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    /* ← geändert von space-between */
     padding: 24px 48px;
     width: 100%;
 }
